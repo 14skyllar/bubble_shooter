@@ -1,34 +1,40 @@
 local Dev = require("dev")
-
 local Button = class({
     name = "Button"
 })
 
-function Button:new(image, x, y, r, sx, sy, ox, oy)
-    self.image = image
-    self.x, self.y = x, y
-    self.r = r
-    self.sx, self.sy = sx, sy
-    self.ox, self.oy = ox, oy
+function Button:new(opts)
+    self.image = opts.image
+    self.x, self.y = opts.x, opts.y
+    self.r = opts.r or 0
+    self.sx, self.sy = opts.sx or 1, opts.sy or 1
+    self.ox, self.oy = opts.ox or 0, opts.oy or 0
 
-    local w, h = image:getDimensions()
-    w, h = w * sx, h * sy
+    local w, h = self.image:getDimensions()
+    w, h = w * self.sx, h * self.sy
     self.size = vec2(w, h)
     self.half_size = vec2(w * 0.5, h * 0.5)
 
-    local rx = x - ox * sx
-    local ry = y - oy * sy
+    local rx = self.x - self.ox * self.sx
+    local ry = self.y - self.oy * self.sy
     self.pos = vec2(rx, ry)
     self.center_pos = vec2(rx + (w * 0.5), ry + (h * 0.5))
 
     self.mouse = vec2()
     self.is_overlap = false
-    self.fade = 0
-    self.alpha = 1
-    self.max_alpha = 1
-    self.fade_amount = 1
+    self.fade = opts.fade or 0
+    self.alpha = opts.alpha or 1
+    self.max_alpha = opts.max_alpha or 1
+    self.fade_amount = opts.fade_amount or 1
     self.is_clickable = true
     self.is_hoverable = true
+
+    if opts.is_clickable ~= nil then
+        self.is_clickable = opts.is_clickable
+    end
+    if opts.is_hoverable ~= nil then
+        self.is_hoverable = opts.is_hoverable
+    end
 end
 
 function Button:update(dt)

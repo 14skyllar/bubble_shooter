@@ -2,22 +2,22 @@ local Slider = class({
     name = "Slider"
 })
 
-function Slider:new(current_value, max_value, x, y, width, height, knob_radius)
-    self.current_value = current_value
-    self.max_value = max_value
-    self.x, self.y = x, y
-    self.width, self.height = width, height
-    self.knob_radius = knob_radius
+function Slider:new(opts)
+    self.current_value = opts.current_value
+    self.max_value = opts.max_value
+    self.x, self.y = opts.x, opts.y
+    self.width, self.height = opts.width, opts.height
+    self.knob_radius = opts.knob_radius
 
-    self.alpha = 1
-    self.max_alpha = 1
+    self.alpha = opts.alpha or 1
+    self.max_alpha = opts.max_alpha or 1
     self.fade = 0
-    self.fade_amount = 1
-    self.is_clickable = true
-    self.bg_color = {0, 0, 0}
-    self.line_color = {1, 1, 1}
-    self.knob_color = {1, 1, 1}
+    self.fade_amount = opts.fade_amount or 1
+    self.bg_color = opts.bg_color or {0, 0, 0}
+    self.line_color = opts.line_color or {1, 1, 1}
+    self.knob_color = opts.knob_color or {1, 1, 1}
     self.is_knob_hovered = false
+
     self.mouse = vec2()
     self.hold = false
 

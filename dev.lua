@@ -1,3 +1,5 @@
+local UserData = require("user_data")
+
 local Dev = {
     is_enabled = false
 }
@@ -12,6 +14,8 @@ end
 function Dev:keypressed(key)
     if key == "`" then
         self.is_enabled = not self.is_enabled
+    elseif key == "d" then
+        love.filesystem.remove(UserData.filename)
     end
 end
 

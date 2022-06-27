@@ -4,6 +4,12 @@ local UserData = {
     filename = "data.json",
     data = {
         main_volume = 1,
+
+        levels = {
+            easy = {},
+            medium = {},
+            hard = {},
+        }
     },
 }
 
@@ -28,5 +34,16 @@ function UserData:save()
     print("saved save data")
     pretty.print(self.data)
 end
+
+function UserData:reset_levels()
+    local levels = UserData.data.levels
+    for i = 1, 20 do
+        if i <= 10 then levels.easy[i] = i == 1 end
+        if i <= 15 then levels.medium[i] = false end
+        if i <= 20 then levels.hard[i] = false end
+    end
+end
+
+UserData:reset_levels()
 
 return UserData

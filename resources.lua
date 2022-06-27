@@ -11,8 +11,15 @@ Resources.images = {
         "button_scoreboard",
         "button_settings",
         "button_reset_levels",
+        "button_easy",
+        "button_medium",
+        "button_hard",
         "text_settings",
         "text_volume",
+        "text_difficulty",
+        "animate_easy",
+        "animate_medium",
+        "animate_hard",
     }
 }
 
