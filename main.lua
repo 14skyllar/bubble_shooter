@@ -1,8 +1,7 @@
 require("libs.batteries"):export()
 
+local Dev = require("dev")
 local MainMenu = require("main_menu")
-
-IS_DEV = true
 
 local current_scene
 local canvas, scale_x, scale_y
@@ -35,8 +34,18 @@ function love.draw()
     love.graphics.setCanvas()
 
     love.graphics.draw(canvas)
+
+    Dev:draw()
 end
 
 function love.mousepressed(mx, my, mb)
     current_scene:mousepressed(mx, my, mb)
+end
+
+function love.mousereleased(mx, my, mb)
+    current_scene:mousereleased(mx, my, mb)
+end
+
+function love.keypressed(key)
+    Dev:keypressed(key)
 end
