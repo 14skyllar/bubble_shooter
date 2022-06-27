@@ -16,4 +16,10 @@ Resources.images = {
     }
 }
 
+Resources.sources = {
+    MainMenu = {
+        -- {id = "bgm", kind = "stream"}
+    }
+}
+
 return Resources

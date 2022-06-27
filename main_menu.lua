@@ -1,5 +1,6 @@
 local Button = require("button")
 local Slider = require("slider")
+local UserData = require("user_data")
 local Utils = require("utils")
 
 local MainMenu = class({
@@ -7,7 +8,10 @@ local MainMenu = class({
 })
 
 function MainMenu:new()
-    self.images = Utils.load_images(self:type())
+    local id = self:type()
+    self.images = Utils.load_images(id)
+    self.sources = Utils.load_sources(id)
+
     self.objects = {}
     self.objects_order = {
         "title", "play", "quit", "settings", "scoreboard",
@@ -122,7 +126,7 @@ function MainMenu:load()
     self.objects.txt_volume.fade_amount = button_fade_amount * 1.5
 
     self.objects.slider = Slider(
-        1, 1,
+        UserData.data.main_volume, 1,
         self.objects.txt_volume.x,
         self.objects.txt_volume.y + txt_settings_height * self.objects.txt_volume.sy,
         settings_box_width * self.objects.settings_box.sx - 72,
@@ -134,6 +138,7 @@ function MainMenu:load()
     self.objects.slider.bg_color = {0, 0, 1}
     self.objects.slider.line_color = {43/255, 117/255, 222/255}
     self.objects.slider.knob_color = {1, 1, 1}
+    self.objects.slider.fade_amount = button_fade_amount * 1.5
 
     local reset_levels_width, reset_levels_height = self.images.button_reset_levels:getDimensions()
     self.objects.reset_levels = Button(
@@ -169,6 +174,7 @@ function MainMenu:load()
 
         self.objects.play.is_clickable = false
         self.objects.quit.is_clickable = false
+        self.objects.settings.is_clickable = false
         self.objects.back.is_clickable = true
         self.objects.reset_levels.is_clickable = true
         self.objects.slider.is_clickable = true
@@ -184,12 +190,15 @@ function MainMenu:load()
 
         self.objects.play.is_clickable = true
         self.objects.quit.is_clickable = true
+        self.objects.settings.is_clickable = true
         self.objects.back.is_clickable = false
         self.objects.reset_levels.is_clickable = false
         self.objects.slider.is_clickable = false
     end
 
     self.objects.slider.on_dragged = function(_, current_value)
+        love.audio.setVolume(current_value)
+        UserData.data.main_volume = current_value
     end
 end
 

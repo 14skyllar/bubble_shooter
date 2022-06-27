@@ -2,16 +2,20 @@ require("libs.batteries"):export()
 
 local Dev = require("dev")
 local MainMenu = require("main_menu")
+local UserData = require("user_data")
 
 local current_scene
-local canvas, scale_x, scale_y
+local canvas
+-- local scale_x, scale_y
 
 function love.load()
-    local window_width, window_height = love.graphics.getDimensions()
+    UserData:init()
+
+    -- local window_width, window_height = love.graphics.getDimensions()
     local target_width, target_height = 1080, 1920
 
-    scale_x = target_width/window_width
-    scale_y = target_height/window_height
+    -- scale_x = target_width/window_width
+    -- scale_y = target_height/window_height
 
     canvas = love.graphics.newCanvas(target_width, target_height)
 
@@ -48,4 +52,8 @@ end
 
 function love.keypressed(key)
     Dev:keypressed(key)
+end
+
+function love.quit()
+    UserData:save()
 end

@@ -13,5 +13,15 @@ function Utils.load_images(current_scene_id)
     return images
 end
 
+function Utils.load_sources(current_scene_id)
+    local sources = {}
+    for _, data in ipairs(Resources.sources[current_scene_id]) do
+        local id = data.id
+        local path = string.format("assets/sources/%s.ogg", id)
+        local source = love.audio.newSource(path, data.kind)
+        sources[id] = source
+    end
+    return sources
+end
 
 return Utils
