@@ -163,7 +163,7 @@ function MainMenu:load()
         y = self.objects.txt_difficulty.y + self.objects.txt_difficulty.oy * 4,
         sx = difficulty_scale, sy = difficulty_scale,
         ox = easy_width * 0.5, oy = easy_height * 0.5,
-        is_hoverable = false, is_clickable = false,
+        is_clickable = false,
         alpha = 0, fade_amount = button_fade_amount * 1.5
     })
 
@@ -174,7 +174,7 @@ function MainMenu:load()
         y = self.objects.easy.y + self.objects.easy.oy * 1.25,
         sx = difficulty_scale, sy = difficulty_scale,
         ox = medium_width * 0.5, oy = medium_height * 0.5,
-        is_hoverable = false, is_clickable = false,
+        is_clickable = false,
         alpha = 0, fade_amount = button_fade_amount * 1.5
     })
 
@@ -185,7 +185,7 @@ function MainMenu:load()
         y = self.objects.medium.y + self.objects.medium.oy * 1.25,
         sx = difficulty_scale, sy = difficulty_scale,
         ox = hard_width * 0.5, oy = hard_height * 0.5,
-        is_hoverable = false, is_clickable = false,
+        is_clickable = false,
         alpha = 0, fade_amount = button_fade_amount * 1.5
     })
 

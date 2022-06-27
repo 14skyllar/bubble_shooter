@@ -17,9 +17,9 @@ Resources.images = {
         "text_settings",
         "text_volume",
         "text_difficulty",
-        "animate_easy",
-        "animate_medium",
-        "animate_hard",
+        "logo_easy",
+        "logo_medium",
+        "logo_hard",
     }
 }
 
