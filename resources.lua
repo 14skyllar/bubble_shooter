@@ -1,10 +1,19 @@
-local Resources = {}
+local Resources = {
+    font = nil
+}
+
+Resources.fonts = {
+    roboto_bold = "roboto_bold.ttf"
+}
 
 Resources.images = {
     MainMenu = {
         "background",
         "title",
-        "settings_box",
+        "box",
+        "box_easy",
+        "box_medium",
+        "box_hard",
         "button_play",
         "button_quit",
         "button_back",
@@ -17,6 +26,10 @@ Resources.images = {
         "text_settings",
         "text_volume",
         "text_difficulty",
+        "text_scoreboard",
+        "text_easy_score",
+        "text_medium_score",
+        "text_hard_score",
         "logo_easy",
         "logo_medium",
         "logo_hard",
@@ -28,5 +41,10 @@ Resources.sources = {
         -- {id = "bgm", kind = "stream"}
     }
 }
+
+function Resources:init()
+    local path = "assets/"
+    self.font = love.graphics.newFont(path .. self.fonts.roboto_bold, 20)
+end
 
 return Resources

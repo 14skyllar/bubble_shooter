@@ -35,6 +35,14 @@ function Button:new(opts)
     if opts.is_hoverable ~= nil then
         self.is_hoverable = opts.is_hoverable
     end
+
+    self.text_color = opts.text_color or {1, 1, 1}
+    self.text = opts.text
+    self.font = opts.font
+    self.tx = opts.tx or self.x
+    self.ty = opts.ty or self.y
+    self.tox = opts.tox or 0
+    self.toy = opts.toy or 0
 end
 
 function Button:update(dt)
@@ -63,6 +71,22 @@ function Button:draw()
     love.graphics.setColor(1, 1, 1, self.alpha)
     love.graphics.draw(self.image, self.x, self.y, self.r, sx, sy, self.ox, self.oy)
 
+    if self.text then
+        local tmp_font
+        if self.font then
+            tmp_font = love.graphics.getFont()
+            love.graphics.setFont(self.font)
+        end
+
+        local tr, tg, tb = unpack(self.text_color)
+        love.graphics.setColor(tr, tg, tb, self.alpha)
+        love.graphics.print(self.text, self.tx, self.ty, 0, 1, 1, self.tox, self.toy)
+
+        if self.font then
+            love.graphics.setFont(tmp_font)
+        end
+    end
+
     if Dev.is_enabled then
         love.graphics.setColor(1, 0, 0, 1)
         love.graphics.rectangle("line", self.pos.x, self.pos.y, self.size.x, self.size.y)
@@ -75,6 +99,7 @@ function Button:mousepressed(mx, my, mb)
     if not self.is_clickable then return end
     if mb == 1 and self.is_overlap and self.on_clicked then
         self:on_clicked()
+        return true
     end
 end
 

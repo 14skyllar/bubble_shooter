@@ -2,6 +2,7 @@ require("libs.batteries"):export()
 
 local Dev = require("dev")
 local MainMenu = require("main_menu")
+local Resources = require("resources")
 local UserData = require("user_data")
 
 local current_scene
@@ -10,6 +11,7 @@ local canvas
 
 function love.load()
     UserData:init()
+    Resources:init()
 
     -- local window_width, window_height = love.graphics.getDimensions()
     local target_width, target_height = 1080, 1920

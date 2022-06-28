@@ -1,4 +1,5 @@
 local Button = require("button")
+local Resources = require("resources")
 local Slider = require("slider")
 local UserData = require("user_data")
 local Utils = require("utils")
@@ -14,8 +15,10 @@ function MainMenu:new()
 
     self.objects = {}
     self.objects_order = {
-        "title", "play", "quit", "settings", "scoreboard",
-        "settings_box", "txt_settings", "txt_volume",
+        "title", "play", "quit", "settings", "scoreboard", "box",
+        "txt_settings", "txt_volume",
+        "txt_scoreboard", "box_easy", "box_medium", "box_hard",
+        "txt_easy_score", "txt_medium_score", "txt_hard_score",
         "txt_difficulty", "easy", "medium", "hard",
         "slider", "reset_levels", "back",
     }
@@ -79,12 +82,12 @@ function MainMenu:load()
         fade_amount = button_fade_amount
     })
 
-    local settings_box_width, settings_box_height = self.images.settings_box:getDimensions()
-    self.objects.settings_box = Button({
-        image = self.images.settings_box,
+    local box_width, box_height = self.images.box:getDimensions()
+    self.objects.box = Button({
+        image = self.images.box,
         x = half_window_width, y = half_window_height,
         sx = 0.75, sy = 0.75,
-        ox = settings_box_width * 0.5, oy = settings_box_height * 0.5,
+        ox = box_width * 0.5, oy = box_height * 0.5,
         fade_amount = button_fade_amount * 1.5,
         is_hoverable = false, alpha = 0, max_alpha = 0.8
     })
@@ -93,7 +96,7 @@ function MainMenu:load()
     self.objects.back = Button({
         image = self.images.button_back,
         x = half_window_width,
-        y = self.objects.settings_box.y + self.objects.settings_box.oy * 0.5,
+        y = self.objects.box.y + self.objects.box.oy * 0.5,
         sx = 0.5, sy = 0.5,
         ox = back_width * 0.5, oy = back_height * 0.5,
         fade_amount = button_fade_amount * 1.5, alpha = 0
@@ -103,17 +106,77 @@ function MainMenu:load()
     self.objects.txt_settings = Button({
         image = self.images.text_settings,
         x = half_window_width,
-        y = self.objects.settings_box.y - self.objects.settings_box.oy * 0.5,
+        y = self.objects.box.y - self.objects.box.oy * 0.5,
         sx = 0.75, sy = 0.75,
         ox = txt_settings_width * 0.5, oy = txt_settings_height * 0.5,
         is_hoverable = false, is_clickable = false,
         alpha = 0, fade_amount = button_fade_amount * 1.5
     })
 
+    local txt_scoreboard_width, txt_scoreboard_height = self.images.text_scoreboard:getDimensions()
+    self.objects.txt_scoreboard = Button({
+        image = self.images.text_scoreboard,
+        x = half_window_width,
+        y = self.objects.box.y - self.objects.box.oy * 0.5,
+        sx = 0.5, sy = 0.5,
+        ox = txt_scoreboard_width * 0.5, oy = txt_scoreboard_height * 0.5,
+        is_hoverable = false, is_clickable = false,
+        alpha = 0, fade_amount = button_fade_amount * 1.5
+    })
+
+    local boxes = {"easy", "medium", "hard"}
+    local prev_box, box_oy_mult = self.objects.txt_scoreboard, 2.5
+    local text_color = {
+        easy = {79/255, 212/255, 74/255},
+        medium = {1, 254/255, 64/255},
+        hard = {213/255, 48/244, 41/255},
+    }
+
+    for _, id in ipairs(boxes) do
+        local box_obj_id = "box_" .. id
+        local box_image = self.images[box_obj_id]
+        local box_d_width, box_d_height = box_image:getDimensions()
+        self.objects[box_obj_id] = Button({
+            image = box_image,
+            x = half_window_width,
+            y = prev_box.y + prev_box.oy * box_oy_mult,
+            sx = 0.5, sy = 0.5,
+            ox = box_d_width * 0.5, oy = box_d_height * 0.5,
+            is_hoverable = false, is_clickable = false,
+            alpha = 0, fade_amount = button_fade_amount * 1.5
+        })
+
+        prev_box = self.objects[box_obj_id]
+        box_oy_mult = 1.5
+
+        local txt_image = self.images["text_" .. id .. "_score"]
+        local _, txt_height = txt_image:getDimensions()
+
+        local score_data = UserData.data.scores[id]
+        local text = string.format("%d/%d", score_data.current, score_data.total)
+
+        local pad = Resources.font:getWidth("   ")
+        self.objects["txt_" .. id .. "_score"] = Button({
+            image = txt_image,
+            x = prev_box.x - prev_box.ox * 0.45,
+            y = prev_box.y,
+            sx = 0.3, sy = 0.3,
+            ox = 0, oy = txt_height * 0.5,
+            is_hoverable = false, is_clickable = false,
+            alpha = 0, fade_amount = button_fade_amount * 1.5,
+            text = text, text_color = text_color[id],
+            font = Resources.font,
+            tx = prev_box.x + prev_box.ox * 0.5 - pad,
+            ty = prev_box.y,
+            tox = Resources.font:getWidth(text),
+            toy = Resources.font:getHeight() * 0.5,
+        })
+    end
+
     local _, txt_volume_height = self.images.text_volume:getDimensions()
     self.objects.txt_volume = Button({
         image = self.images.text_volume,
-        x = self.objects.settings_box.x - self.objects.settings_box.ox * self.objects.settings_box.sx + 32,
+        x = self.objects.box.x - self.objects.box.ox * self.objects.box.sx + 32,
         y = self.objects.txt_settings.y + self.objects.txt_settings.oy * 3,
         sx = 0.5, sy = 0.5,
         ox = 0, oy = txt_volume_height * 0.5,
@@ -126,7 +189,7 @@ function MainMenu:load()
         max_value = 1,
         x = self.objects.txt_volume.x,
         y = self.objects.txt_volume.y + txt_settings_height * self.objects.txt_volume.sy,
-        width = settings_box_width * self.objects.settings_box.sx - 72,
+        width = box_width * self.objects.box.sx - 72,
         height = 24, knob_radius = 16, alpha = 0,
         is_clickable = false,
         bg_color = {0, 0, 1},
@@ -148,7 +211,7 @@ function MainMenu:load()
     self.objects.txt_difficulty = Button({
         image = self.images.text_difficulty,
         x = half_window_width,
-        y = self.objects.settings_box.y - self.objects.settings_box.oy * 0.5 - 32,
+        y = self.objects.box.y - self.objects.box.oy * 0.5 - 32,
         sx = 1.25, sy = 1.125,
         ox = txt_difficulty_width * 0.5, oy = txt_difficulty_height * 0.5,
         is_hoverable = false, is_clickable = false,
@@ -189,14 +252,14 @@ function MainMenu:load()
         alpha = 0, fade_amount = button_fade_amount * 1.5
     })
 
-    local group_main = {
+    self.group_main = {
         self.objects.title,
         self.objects.play,
         self.objects.quit,
     }
 
-    local group_settings = {
-        self.objects.settings_box,
+    self.group_settings = {
+        self.objects.box,
         self.objects.txt_settings,
         self.objects.txt_volume,
         self.objects.slider,
@@ -204,8 +267,20 @@ function MainMenu:load()
         self.objects.back,
     }
 
-    local group_difficulty = {
-        self.objects.settings_box,
+    self.group_scoreboard = {
+        self.objects.box,
+        self.objects.txt_scoreboard,
+        self.objects.box_easy,
+        self.objects.txt_easy_score,
+        self.objects.box_medium,
+        self.objects.txt_medium_score,
+        self.objects.box_hard,
+        self.objects.txt_hard_score,
+        self.objects.back,
+    }
+
+    self.group_difficulty = {
+        self.objects.box,
         self.objects.txt_difficulty,
         self.objects.easy,
         self.objects.medium,
@@ -214,9 +289,9 @@ function MainMenu:load()
     }
 
     self.objects.play.on_clicked = function()
-        for _, obj in ipairs(group_main) do obj.fade = -1 end
+        for _, obj in ipairs(self.group_main) do obj.fade = -1 end
         self.objects.scoreboard.fade = -1
-        for _, obj in ipairs(group_difficulty) do obj.fade = 1 end
+        for _, obj in ipairs(self.group_difficulty) do obj.fade = 1 end
 
         self.objects.play.is_clickable = false
         self.objects.quit.is_clickable = false
@@ -237,8 +312,8 @@ function MainMenu:load()
     end
 
     self.objects.settings.on_clicked = function()
-        for _, obj in ipairs(group_main) do obj.fade = -1 end
-        for _, obj in ipairs(group_settings) do obj.fade = 1 end
+        for _, obj in ipairs(self.group_main) do obj.fade = -1 end
+        for _, obj in ipairs(self.group_settings) do obj.fade = 1 end
 
         self.objects.play.is_clickable = false
         self.objects.quit.is_clickable = false
@@ -249,13 +324,22 @@ function MainMenu:load()
     end
 
     self.objects.scoreboard.on_clicked = function()
+        for _, obj in ipairs(self.group_main) do obj.fade = -1 end
+        for _, obj in ipairs(self.group_scoreboard) do obj.fade = 1 end
+
+        self.objects.play.is_clickable = false
+        self.objects.quit.is_clickable = false
+        self.objects.settings.is_clickable = false
+        self.objects.scoreboard.is_clickable = false
+        self.objects.back.is_clickable = true
     end
 
     self.objects.back.on_clicked = function()
-        for _, obj in ipairs(group_main) do obj.fade = 1 end
+        for _, obj in ipairs(self.group_main) do obj.fade = 1 end
         self.objects.scoreboard.fade = 1
-        for _, obj in ipairs(group_settings) do obj.fade = -1 end
-        for _, obj in ipairs(group_difficulty) do obj.fade = -1 end
+        for _, obj in ipairs(self.group_settings) do obj.fade = -1 end
+        for _, obj in ipairs(self.group_scoreboard) do obj.fade = -1 end
+        for _, obj in ipairs(self.group_difficulty) do obj.fade = -1 end
 
         self.objects.play.is_clickable = true
         self.objects.quit.is_clickable = true
@@ -281,7 +365,11 @@ function MainMenu:load()
 end
 
 function MainMenu:show_levels(difficulty)
-    local obj = self.objects[difficulty]
+    local obj_difficulty = self.objects[difficulty]
+    for _, obj in ipairs(self.group_difficulty) do
+        obj.fade = -1
+        obj.is_clickable = false
+    end
 end
 
 function MainMenu:update(dt)
@@ -314,7 +402,8 @@ end
 function MainMenu:mousepressed(mx, my, mb)
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
-        btn:mousepressed(mx, my, mb)
+        local res = btn:mousepressed(mx, my, mb)
+        if res then break end
     end
 end
 
