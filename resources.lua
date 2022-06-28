@@ -10,6 +10,7 @@ Resources.images = {
     MainMenu = {
         "background",
         "title",
+        "close",
         "box",
         "box_easy",
         "box_medium",
@@ -23,6 +24,8 @@ Resources.images = {
         "button_easy",
         "button_medium",
         "button_hard",
+        "button_arrow_left",
+        "button_arrow_right",
         "text_settings",
         "text_volume",
         "text_difficulty",

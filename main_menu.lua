@@ -17,16 +17,19 @@ function MainMenu:new()
     self.objects_order = {
         "title", "play", "quit", "settings", "scoreboard", "box",
         "txt_settings", "txt_volume",
-        "txt_scoreboard", "box_easy", "box_medium", "box_hard",
+        "txt_scoreboard", "box_easy", "box_medium", "box_hard", "close",
         "txt_easy_score", "txt_medium_score", "txt_hard_score",
         "txt_difficulty", "easy", "medium", "hard",
         "txt_easy", "txt_medium", "txt_hard",
+        "left_arrow", "right_arrow",
         "slider", "reset_levels", "back",
     }
 
     for i = 1, UserData.data.progress.hard.total do
         table.insert(self.objects_order, "star_" .. i)
     end
+
+    self.difficulty = nil
 end
 
 function MainMenu:load()
@@ -95,6 +98,18 @@ function MainMenu:load()
         ox = box_width * 0.5, oy = box_height * 0.5,
         fade_amount = button_fade_amount * 1.5,
         is_hoverable = false, alpha = 0, max_alpha = 0.8
+    })
+
+    local close_width, close_height = self.images.close:getDimensions()
+    self.objects.close = Button({
+        image = self.images.close,
+        x = self.objects.box.x + self.objects.box.ox * 0.65,
+        y = self.objects.box.y - self.objects.box.oy * 0.65,
+        sx = 0.25, sy = 0.25,
+        ox = close_width * 0.5, oy = close_height * 0.5,
+        fade_amount = button_fade_amount,
+        alpha = 0,
+        is_clickable = false,
     })
 
     local back_width, back_height = self.images.button_back:getDimensions()
@@ -282,6 +297,7 @@ function MainMenu:load()
         self.objects.box_hard,
         self.objects.txt_hard_score,
         self.objects.reset_levels,
+        self.objects.close,
     }
 
     self.group_difficulty = {
@@ -341,6 +357,7 @@ function MainMenu:load()
         self.objects.scoreboard.is_clickable = false
         self.objects.back.is_clickable = false
         self.objects.reset_levels.is_clickable = true
+        self.objects.close.is_clickable = true
     end
 
     self.objects.back.on_clicked = function()
@@ -368,6 +385,19 @@ function MainMenu:load()
         end
     end
 
+    self.objects.close.on_clicked = function()
+        for _, obj in ipairs(self.group_main) do obj.fade = 1 end
+        self.objects.scoreboard.fade = 1
+        for _, obj in ipairs(self.group_scoreboard) do obj.fade = -1 end
+
+        self.objects.play.is_clickable = true
+        self.objects.quit.is_clickable = true
+        self.objects.settings.is_clickable = true
+        self.objects.scoreboard.is_clickable = true
+        self.objects.reset_levels.is_clickable = false
+        self.objects.close.is_clickable = false
+    end
+
     self.objects.slider.on_dragged = function(_, current_value)
         love.audio.setVolume(current_value)
         UserData.data.main_volume = current_value
@@ -380,43 +410,101 @@ function MainMenu:load()
 end
 
 function MainMenu:show_levels(difficulty)
-    local obj_difficulty = self.objects[difficulty]
+    if self.group_stage then
+        tablex.clear(self.group_stage)
+        local id = "txt_" .. self.difficulty
+        self.objects[id] = nil
+    end
 
-    local window_width, window_height = love.graphics.getDimensions()
+    self.difficulty = difficulty
+
+    local window_width = love.graphics.getDimensions()
     local half_window_width = window_width * 0.5
-    local half_window_height = window_height * 0.5
 
     local txt_obj_id = "txt_" .. difficulty
     local image = self.images["text_" .. difficulty]
-    local txt_easy_width, txt_easy_height = image:getDimensions()
+    local txt_diff_width, txt_diff_height = image:getDimensions()
     self.objects[txt_obj_id] = Button({
         image = image,
         x = half_window_width,
         y = self.objects.box.y - self.objects.box.oy * 0.5,
         sx = 0.75, sy = 0.75,
-        ox = txt_easy_width * 0.5, oy = txt_easy_height * 0.5,
+        ox = txt_diff_width * 0.5, oy = txt_diff_height * 0.5,
         is_clickable = false, is_hoverable = false,
         alpha = 0,
+        fade_amount = 3,
     })
-
-    self.group_stage = {
-        self.objects.box,
-        self.objects[txt_obj_id],
-    }
 
     local box = self.objects.box
     local bx = box.pos.x
     local bw, bh = box.size.x, box.size.y
 
+    local left_arrow_width, left_arrow_height = self.images.button_arrow_left:getDimensions()
+    self.objects.left_arrow = Button({
+        image = self.images.button_arrow_left,
+        x = bx + left_arrow_width * 0.5,
+        y = box.pos.y + bh * 0.85,
+        sx = 0.5, sy = 0.5,
+        ox = left_arrow_width * 0.5,
+        oy = left_arrow_height * 0.5,
+        fade_amount = 3,
+    })
+
+    local right_arrow_width, right_arrow_height = self.images.button_arrow_right:getDimensions()
+    self.objects.right_arrow = Button({
+        image = self.images.button_arrow_right,
+        x = bx + bw - right_arrow_width * 0.5,
+        y = box.pos.y + bh * 0.85,
+        sx = 0.5, sy = 0.5,
+        ox = right_arrow_width * 0.5,
+        oy = right_arrow_height * 0.5,
+        fade_amount = 3,
+    })
+
+    self.objects.left_arrow.on_clicked = function()
+        if self.difficulty == "easy" then
+            self.objects.reset_levels:update_y(self.objects.reset_levels.y)
+
+            for _, obj in ipairs(self.group_stage) do
+                obj.fade = -1
+                obj.is_clickable = false
+                obj.is_hoverable = false
+            end
+            for _, obj in ipairs(self.group_difficulty) do obj.fade = 1 end
+            self.objects.box.fade = -1
+
+            self.objects.back.is_clickable = true
+            self.objects.easy.is_clickable = true
+            self.objects.medium.is_clickable = true
+            self.objects.hard.is_clickable = true
+            self.objects.left_arrow.is_clickable = false
+            self.objects.right_arrow.is_clickable = false
+
+            if self.group_stage then
+                tablex.clear(self.group_stage)
+            end
+        elseif self.difficulty == "medium" then
+            self:show_levels("easy")
+        elseif self.difficulty == "hard" then
+            self:show_levels("medium")
+        end
+    end
+
+    self.objects.right_arrow.on_clicked = function()
+        if self.difficulty == "easy" then
+        elseif self.difficulty == "medium" then
+            self:show_levels("hard")
+        elseif self.difficulty == "hard" then
+            self:show_levels("medium")
+        end
+    end
+
     local txt_obj = self.objects[txt_obj_id]
     local by = txt_obj.y
-
     local image_star = self.images["star_" .. difficulty]
     local image_locked_star = self.images["locked_star_" .. difficulty]
-
     local star_width, star_height = image_star:getDimensions()
     local ix, iy = 1, 1
-
     local progress = UserData.data.progress[difficulty]
     local limit = progress.total * 0.5
     local scale = 1.25
@@ -427,8 +515,17 @@ function MainMenu:show_levels(difficulty)
 
     local text_colors = {
         easy = {88/255, 1, 0},
+        medium = {1, 213/255, 0},
+        hard = {1, 0, 3/255},
     }
     local text_color = text_colors[difficulty]
+
+    self.group_stage = {
+        self.objects.box,
+        self.objects[txt_obj_id],
+        self.objects.left_arrow,
+        self.objects.right_arrow,
+    }
 
     for i = 1, progress.total do
         local star_x = bx + star_width + gap_x * (ix - 1)
@@ -449,6 +546,7 @@ function MainMenu:show_levels(difficulty)
             x = star_x, y = star_y,
             sx = scale, sy = scale,
             ox = star_width * 0.5, oy = star_height * 0.5,
+            sx_dt = 0.25, sy_dt = 0.25,
             alpha = 0,
             is_hoverable = is_unlocked, is_clickable = is_unlocked,
             font = Resources.font,
@@ -456,6 +554,7 @@ function MainMenu:show_levels(difficulty)
             text_color = text_color,
             tox = Resources.font:getWidth(text) * 0.5,
             toy = Resources.font:getHeight() * 0.5,
+            fade_amount = 3,
         })
 
         table.insert(self.group_stage, self.objects[star_obj_id])
@@ -472,9 +571,6 @@ function MainMenu:show_levels(difficulty)
 end
 
 function MainMenu:update(dt)
-    if self.group_stage then
-        print(#self.group_stage)
-    end
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn then

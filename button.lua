@@ -9,6 +9,8 @@ function Button:new(opts)
     self.r = opts.r or 0
     self.sx, self.sy = opts.sx or 1, opts.sy or 1
     self.ox, self.oy = opts.ox or 0, opts.oy or 0
+    self.sx_dt = opts.sx_dt or 0.1
+    self.sy_dt = opts.sy_dt or 0.1
 
     local w, h = self.image:getDimensions()
     w, h = w * self.sx, h * self.sy
@@ -73,8 +75,8 @@ end
 function Button:draw()
     local sx, sy = self.sx, self.sy
     if self.is_hoverable and self.is_overlap then
-        sx = sx + 0.1
-        sy = sy + 0.1
+        sx = sx + self.sx_dt
+        sy = sy + self.sy_dt
     end
 
     love.graphics.setColor(1, 1, 1, self.alpha)
