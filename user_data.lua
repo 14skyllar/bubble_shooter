@@ -6,9 +6,9 @@ local UserData = {
         main_volume = 1,
 
         progress = {
-            easy = 1,
-            medium = 0,
-            hard = 0,
+            easy = {current = 1, total = 10},
+            medium = {current = 0, total = 15},
+            hard = {current = 0, total = 20},
         },
 
         scores = {
@@ -44,9 +44,10 @@ end
 
 function UserData:reset_levels()
     local progress = UserData.data.progress
-    progress.easy = 1
-    progress.medium = 0
-    progress.hard = 0
+    progress.easy.current = 1
+    progress.medium.current = 0
+    progress.hard.current = 0
+    print("levels reset")
 end
 
 return UserData

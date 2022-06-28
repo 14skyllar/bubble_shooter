@@ -20,8 +20,13 @@ function MainMenu:new()
         "txt_scoreboard", "box_easy", "box_medium", "box_hard",
         "txt_easy_score", "txt_medium_score", "txt_hard_score",
         "txt_difficulty", "easy", "medium", "hard",
+        "txt_easy", "txt_medium", "txt_hard",
         "slider", "reset_levels", "back",
     }
+
+    for i = 1, UserData.data.progress.hard.total do
+        table.insert(self.objects_order, "star_" .. i)
+    end
 end
 
 function MainMenu:load()
@@ -276,7 +281,7 @@ function MainMenu:load()
         self.objects.txt_medium_score,
         self.objects.box_hard,
         self.objects.txt_hard_score,
-        self.objects.back,
+        self.objects.reset_levels,
     }
 
     self.group_difficulty = {
@@ -324,6 +329,9 @@ function MainMenu:load()
     end
 
     self.objects.scoreboard.on_clicked = function()
+        self.objects.reset_levels.orig_y = self.objects.reset_levels.y
+        self.objects.reset_levels:update_y(prev_box.y + prev_box.oy * 1.5)
+
         for _, obj in ipairs(self.group_main) do obj.fade = -1 end
         for _, obj in ipairs(self.group_scoreboard) do obj.fade = 1 end
 
@@ -331,10 +339,13 @@ function MainMenu:load()
         self.objects.quit.is_clickable = false
         self.objects.settings.is_clickable = false
         self.objects.scoreboard.is_clickable = false
-        self.objects.back.is_clickable = true
+        self.objects.back.is_clickable = false
+        self.objects.reset_levels.is_clickable = true
     end
 
     self.objects.back.on_clicked = function()
+        self.objects.reset_levels:update_y(self.objects.reset_levels.y)
+
         for _, obj in ipairs(self.group_main) do obj.fade = 1 end
         self.objects.scoreboard.fade = 1
         for _, obj in ipairs(self.group_settings) do obj.fade = -1 end
@@ -351,6 +362,10 @@ function MainMenu:load()
         self.objects.easy.is_clickable = false
         self.objects.medium.is_clickable = false
         self.objects.hard.is_clickable = false
+
+        if self.group_stage then
+            tablex.clear(self.group_stage)
+        end
     end
 
     self.objects.slider.on_dragged = function(_, current_value)
@@ -366,16 +381,105 @@ end
 
 function MainMenu:show_levels(difficulty)
     local obj_difficulty = self.objects[difficulty]
+
+    local window_width, window_height = love.graphics.getDimensions()
+    local half_window_width = window_width * 0.5
+    local half_window_height = window_height * 0.5
+
+    local txt_obj_id = "txt_" .. difficulty
+    local image = self.images["text_" .. difficulty]
+    local txt_easy_width, txt_easy_height = image:getDimensions()
+    self.objects[txt_obj_id] = Button({
+        image = image,
+        x = half_window_width,
+        y = self.objects.box.y - self.objects.box.oy * 0.5,
+        sx = 0.75, sy = 0.75,
+        ox = txt_easy_width * 0.5, oy = txt_easy_height * 0.5,
+        is_clickable = false, is_hoverable = false,
+        alpha = 0,
+    })
+
+    self.group_stage = {
+        self.objects.box,
+        self.objects[txt_obj_id],
+    }
+
+    local box = self.objects.box
+    local bx = box.pos.x
+    local bw, bh = box.size.x, box.size.y
+
+    local txt_obj = self.objects[txt_obj_id]
+    local by = txt_obj.y
+
+    local image_star = self.images["star_" .. difficulty]
+    local image_locked_star = self.images["locked_star_" .. difficulty]
+
+    local star_width, star_height = image_star:getDimensions()
+    local ix, iy = 1, 1
+
+    local progress = UserData.data.progress[difficulty]
+    local limit = progress.total * 0.5
+    local scale = 1.25
+    local gap_x = (bx + bw)/star_width * limit
+    local gap_y = (by + bh)/star_height * limit
+    bx = bx + gap_x * 0.5
+    by = by + gap_y * 0.5
+
+    local text_colors = {
+        easy = {88/255, 1, 0},
+    }
+    local text_color = text_colors[difficulty]
+
+    for i = 1, progress.total do
+        local star_x = bx + star_width + gap_x * (ix - 1)
+        local star_y = by + star_height + gap_y * (iy - 1)
+
+        ix = ix + 1
+        if (i % limit) == 0 then
+            iy = iy + 1
+            ix = 1
+        end
+
+        local is_unlocked = i <= progress.current
+        local text = is_unlocked and tostring(i) or ""
+
+        local star_obj_id = "star_" .. i
+        self.objects[star_obj_id] = Button({
+            image = is_unlocked and image_star or image_locked_star,
+            x = star_x, y = star_y,
+            sx = scale, sy = scale,
+            ox = star_width * 0.5, oy = star_height * 0.5,
+            alpha = 0,
+            is_hoverable = is_unlocked, is_clickable = is_unlocked,
+            font = Resources.font,
+            text = text,
+            text_color = text_color,
+            tox = Resources.font:getWidth(text) * 0.5,
+            toy = Resources.font:getHeight() * 0.5,
+        })
+
+        table.insert(self.group_stage, self.objects[star_obj_id])
+    end
+
     for _, obj in ipairs(self.group_difficulty) do
         obj.fade = -1
         obj.is_clickable = false
     end
+
+    for _, obj in ipairs(self.group_stage) do
+        obj.fade = 1
+    end
 end
 
 function MainMenu:update(dt)
+    if self.group_stage then
+        print(#self.group_stage)
+    end
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
-        btn:update(dt)
+        if btn then
+            btn:update(dt)
+        end
     end
 end
 
@@ -395,22 +499,28 @@ function MainMenu:draw()
 
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
-        btn:draw()
+        if btn then
+            btn:draw()
+        end
     end
 end
 
 function MainMenu:mousepressed(mx, my, mb)
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
-        local res = btn:mousepressed(mx, my, mb)
-        if res then break end
+        if btn then
+            local res = btn:mousepressed(mx, my, mb)
+            if res then break end
+        end
     end
 end
 
 function MainMenu:mousereleased(mx, my, mb)
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
-        btn:mousereleased(mx, my, mb)
+        if btn then
+            btn:mousereleased(mx, my, mb)
+        end
     end
 end
 

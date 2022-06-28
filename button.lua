@@ -45,6 +45,15 @@ function Button:new(opts)
     self.toy = opts.toy or 0
 end
 
+function Button:update_y(y)
+    self.y = y
+    self.pos.y = y
+
+    local h = self.image:getHeight() * self.sy
+    local ry = self.y - self.oy * self.sy
+    self.center_pos.y = ry + (h * 0.5)
+end
+
 function Button:update(dt)
     if self.fade ~= 0 then
         self.alpha = self.alpha + self.fade_amount * self.fade * dt
