@@ -450,17 +450,6 @@ function MainMenu:show_levels(difficulty)
         fade_amount = 3,
     })
 
-    local right_arrow_width, right_arrow_height = self.images.button_arrow_right:getDimensions()
-    self.objects.right_arrow = Button({
-        image = self.images.button_arrow_right,
-        x = bx + bw - right_arrow_width * 0.5,
-        y = box.pos.y + bh * 0.85,
-        sx = 0.5, sy = 0.5,
-        ox = right_arrow_width * 0.5,
-        oy = right_arrow_height * 0.5,
-        fade_amount = 3,
-    })
-
     self.objects.left_arrow.on_clicked = function()
         if self.difficulty == "easy" then
             self.objects.reset_levels:update_y(self.objects.reset_levels.y)
@@ -472,6 +461,8 @@ function MainMenu:show_levels(difficulty)
             end
             for _, obj in ipairs(self.group_difficulty) do obj.fade = 1 end
             self.objects.box.fade = -1
+            self.objects.left_arrow.fade = -1
+            self.objects.right_arrow.fade = -1
 
             self.objects.back.is_clickable = true
             self.objects.easy.is_clickable = true
@@ -490,12 +481,24 @@ function MainMenu:show_levels(difficulty)
         end
     end
 
-    self.objects.right_arrow.on_clicked = function()
-        if self.difficulty == "easy" then
-        elseif self.difficulty == "medium" then
-            self:show_levels("hard")
-        elseif self.difficulty == "hard" then
-            self:show_levels("medium")
+    if difficulty ~= "hard" then
+        local right_arrow_width, right_arrow_height = self.images.button_arrow_right:getDimensions()
+        self.objects.right_arrow = Button({
+            image = self.images.button_arrow_right,
+            x = bx + bw - right_arrow_width * 0.5,
+            y = box.pos.y + bh * 0.85,
+            sx = 0.5, sy = 0.5,
+            ox = right_arrow_width * 0.5,
+            oy = right_arrow_height * 0.5,
+            fade_amount = 3,
+        })
+
+        self.objects.right_arrow.on_clicked = function()
+            if self.difficulty == "easy" then
+                self:show_levels("medium")
+            elseif self.difficulty == "medium" then
+                self:show_levels("hard")
+            end
         end
     end
 
