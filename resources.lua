@@ -1,6 +1,4 @@
-local Resources = {
-    font = nil
-}
+local Resources = {}
 
 Resources.fonts = {
     roboto_bold = "roboto_bold.ttf"
@@ -45,18 +43,31 @@ Resources.images = {
         "locked_star_easy",
         "locked_star_medium",
         "locked_star_hard",
-    }
+    },
+
+    Game = {
+        "background", "heart_empty", "bubble",
+        "score_holder", "life_holder", "time_holder",
+    },
+
+    Easy = {
+        "heart", "label",
+    },
 }
 
 Resources.sources = {
     MainMenu = {
         -- {id = "bgm", kind = "stream"}
+    },
+
+    Game = {
     }
 }
 
 function Resources:init()
     local path = "assets/"
     self.font = love.graphics.newFont(path .. self.fonts.roboto_bold, 20)
+    self.game_font = love.graphics.newFont(path .. self.fonts.roboto_bold, 16)
 end
 
 return Resources

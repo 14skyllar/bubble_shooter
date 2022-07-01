@@ -1,6 +1,7 @@
 local Button = require("button")
 local Resources = require("resources")
 local Slider = require("slider")
+local StateManager = require("state_manager")
 local UserData = require("user_data")
 local Utils = require("utils")
 
@@ -36,7 +37,6 @@ function MainMenu:load()
     local window_width, window_height = love.graphics.getDimensions()
     local half_window_width = window_width * 0.5
     local half_window_height = window_height * 0.5
-    local button_fade_amount = 3
 
     local title_width, title_height = self.images.title:getDimensions()
     self.objects.title = Button({
@@ -45,7 +45,6 @@ function MainMenu:load()
         sx = 0.5, sy = 0.5,
         ox = title_width * 0.5, oy = title_height * 0.5,
         is_hoverable = false,
-        fade_amount = button_fade_amount
     })
 
     local button_scale = 0.6
@@ -55,7 +54,6 @@ function MainMenu:load()
         x = half_window_width, y = half_window_height,
         sx = button_scale, sy = button_scale,
         ox = play_width * 0.5, oy = play_height * 0.5,
-        fade_amount = button_fade_amount
     }
     )
 
@@ -66,7 +64,6 @@ function MainMenu:load()
         x = half_window_width, y = quit_y,
         sx = button_scale, sy = button_scale,
         ox = quit_width * 0.5, oy = quit_height * 0.5,
-        fade_amount = button_fade_amount
     })
 
     local offset = 32
@@ -87,7 +84,6 @@ function MainMenu:load()
         x = window_width - offset, y = bottom_y,
         sx = button2_scale, sy = button2_scale,
         ox = scoreboard_width * 0.5, oy = scoreboard_height * 0.5,
-        fade_amount = button_fade_amount
     })
 
     local box_width, box_height = self.images.box:getDimensions()
@@ -96,7 +92,6 @@ function MainMenu:load()
         x = half_window_width, y = half_window_height,
         sx = 0.75, sy = 0.75,
         ox = box_width * 0.5, oy = box_height * 0.5,
-        fade_amount = button_fade_amount * 1.5,
         is_hoverable = false, alpha = 0, max_alpha = 0.8
     })
 
@@ -107,7 +102,6 @@ function MainMenu:load()
         y = self.objects.box.y - self.objects.box.oy * 0.65,
         sx = 0.25, sy = 0.25,
         ox = close_width * 0.5, oy = close_height * 0.5,
-        fade_amount = button_fade_amount,
         alpha = 0,
         is_clickable = false,
     })
@@ -119,7 +113,7 @@ function MainMenu:load()
         y = self.objects.box.y + self.objects.box.oy * 0.5,
         sx = 0.5, sy = 0.5,
         ox = back_width * 0.5, oy = back_height * 0.5,
-        fade_amount = button_fade_amount * 1.5, alpha = 0
+        alpha = 0
     })
 
     local txt_settings_width, txt_settings_height = self.images.text_settings:getDimensions()
@@ -130,7 +124,7 @@ function MainMenu:load()
         sx = 0.75, sy = 0.75,
         ox = txt_settings_width * 0.5, oy = txt_settings_height * 0.5,
         is_hoverable = false, is_clickable = false,
-        alpha = 0, fade_amount = button_fade_amount * 1.5
+        alpha = 0,
     })
 
     local txt_scoreboard_width, txt_scoreboard_height = self.images.text_scoreboard:getDimensions()
@@ -141,7 +135,7 @@ function MainMenu:load()
         sx = 0.5, sy = 0.5,
         ox = txt_scoreboard_width * 0.5, oy = txt_scoreboard_height * 0.5,
         is_hoverable = false, is_clickable = false,
-        alpha = 0, fade_amount = button_fade_amount * 1.5
+        alpha = 0,
     })
 
     local boxes = {"easy", "medium", "hard"}
@@ -163,7 +157,7 @@ function MainMenu:load()
             sx = 0.5, sy = 0.5,
             ox = box_d_width * 0.5, oy = box_d_height * 0.5,
             is_hoverable = false, is_clickable = false,
-            alpha = 0, fade_amount = button_fade_amount * 1.5
+            alpha = 0,
         })
 
         prev_box = self.objects[box_obj_id]
@@ -183,7 +177,7 @@ function MainMenu:load()
             sx = 0.3, sy = 0.3,
             ox = 0, oy = txt_height * 0.5,
             is_hoverable = false, is_clickable = false,
-            alpha = 0, fade_amount = button_fade_amount * 1.5,
+            alpha = 0,
             text = text, text_color = text_color[id],
             font = Resources.font,
             tx = prev_box.x + prev_box.ox * 0.5 - pad,
@@ -201,7 +195,7 @@ function MainMenu:load()
         sx = 0.5, sy = 0.5,
         ox = 0, oy = txt_volume_height * 0.5,
         is_hoverable = false, is_clickable = false,
-        alpha = 0, fade_amount = button_fade_amount * 1.5
+        alpha = 0,
     })
 
     self.objects.slider = Slider({
@@ -215,7 +209,6 @@ function MainMenu:load()
         bg_color = {0, 0, 1},
         line_color = {43/255, 117/255, 222/255},
         knob_color = {1, 1, 1},
-        fade_amount = button_fade_amount * 1.5
     })
 
     local reset_levels_width, reset_levels_height = self.images.button_reset_levels:getDimensions()
@@ -224,7 +217,7 @@ function MainMenu:load()
         x = half_window_width, y = half_window_height + 64,
         sx = 0.75, sy = 0.75,
         ox = reset_levels_width * 0.5, oy = reset_levels_height * 0.5,
-        alpha = 0, fade_amount = button_fade_amount * 1.5
+        alpha = 0,
     })
 
     local txt_difficulty_width, txt_difficulty_height = self.images.text_difficulty:getDimensions()
@@ -235,7 +228,7 @@ function MainMenu:load()
         sx = 1.25, sy = 1.125,
         ox = txt_difficulty_width * 0.5, oy = txt_difficulty_height * 0.5,
         is_hoverable = false, is_clickable = false,
-        alpha = 0, fade_amount = button_fade_amount * 1.5,
+        alpha = 0,
     })
 
     local difficulty_scale = 0.5
@@ -247,7 +240,7 @@ function MainMenu:load()
         sx = difficulty_scale, sy = difficulty_scale,
         ox = easy_width * 0.5, oy = easy_height * 0.5,
         is_clickable = false,
-        alpha = 0, fade_amount = button_fade_amount * 1.5
+        alpha = 0,
     })
 
     local medium_width, medium_height = self.images.button_medium:getDimensions()
@@ -258,7 +251,7 @@ function MainMenu:load()
         sx = difficulty_scale, sy = difficulty_scale,
         ox = medium_width * 0.5, oy = medium_height * 0.5,
         is_clickable = false,
-        alpha = 0, fade_amount = button_fade_amount * 1.5
+        alpha = 0,
     })
 
     local hard_width, hard_height = self.images.button_hard:getDimensions()
@@ -269,7 +262,7 @@ function MainMenu:load()
         sx = difficulty_scale, sy = difficulty_scale,
         ox = hard_width * 0.5, oy = hard_height * 0.5,
         is_clickable = false,
-        alpha = 0, fade_amount = button_fade_amount * 1.5
+        alpha = 0,
     })
 
     self.group_main = {
@@ -310,9 +303,9 @@ function MainMenu:load()
     }
 
     self.objects.play.on_clicked = function()
-        for _, obj in ipairs(self.group_main) do obj.fade = -1 end
-        self.objects.scoreboard.fade = -1
-        for _, obj in ipairs(self.group_difficulty) do obj.fade = 1 end
+        for _, obj in ipairs(self.group_main) do obj.alpha = 0 end
+        self.objects.scoreboard.alpha = 0
+        for _, obj in ipairs(self.group_difficulty) do obj.alpha = 1 end
 
         self.objects.play.is_clickable = false
         self.objects.quit.is_clickable = false
@@ -333,8 +326,8 @@ function MainMenu:load()
     end
 
     self.objects.settings.on_clicked = function()
-        for _, obj in ipairs(self.group_main) do obj.fade = -1 end
-        for _, obj in ipairs(self.group_settings) do obj.fade = 1 end
+        for _, obj in ipairs(self.group_main) do obj.alpha = 0 end
+        for _, obj in ipairs(self.group_settings) do obj.alpha = 1 end
 
         self.objects.play.is_clickable = false
         self.objects.quit.is_clickable = false
@@ -348,8 +341,8 @@ function MainMenu:load()
         self.objects.reset_levels.orig_y = self.objects.reset_levels.y
         self.objects.reset_levels:update_y(prev_box.y + prev_box.oy * 1.5)
 
-        for _, obj in ipairs(self.group_main) do obj.fade = -1 end
-        for _, obj in ipairs(self.group_scoreboard) do obj.fade = 1 end
+        for _, obj in ipairs(self.group_main) do obj.alpha = 0 end
+        for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 1 end
 
         self.objects.play.is_clickable = false
         self.objects.quit.is_clickable = false
@@ -363,11 +356,11 @@ function MainMenu:load()
     self.objects.back.on_clicked = function()
         self.objects.reset_levels:update_y(self.objects.reset_levels.y)
 
-        for _, obj in ipairs(self.group_main) do obj.fade = 1 end
-        self.objects.scoreboard.fade = 1
-        for _, obj in ipairs(self.group_settings) do obj.fade = -1 end
-        for _, obj in ipairs(self.group_scoreboard) do obj.fade = -1 end
-        for _, obj in ipairs(self.group_difficulty) do obj.fade = -1 end
+        for _, obj in ipairs(self.group_main) do obj.alpha = 1 end
+        self.objects.scoreboard.alpha = 1
+        for _, obj in ipairs(self.group_settings) do obj.alpha = 0 end
+        for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 0 end
+        for _, obj in ipairs(self.group_difficulty) do obj.alpha = 0 end
 
         self.objects.play.is_clickable = true
         self.objects.quit.is_clickable = true
@@ -386,9 +379,9 @@ function MainMenu:load()
     end
 
     self.objects.close.on_clicked = function()
-        for _, obj in ipairs(self.group_main) do obj.fade = 1 end
-        self.objects.scoreboard.fade = 1
-        for _, obj in ipairs(self.group_scoreboard) do obj.fade = -1 end
+        for _, obj in ipairs(self.group_main) do obj.alpha = 1 end
+        self.objects.scoreboard.alpha = 1
+        for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 0 end
 
         self.objects.play.is_clickable = true
         self.objects.quit.is_clickable = true
@@ -414,6 +407,15 @@ function MainMenu:show_levels(difficulty)
         tablex.clear(self.group_stage)
         local id = "txt_" .. self.difficulty
         self.objects[id] = nil
+
+        local progress = UserData.data.progress[self.difficulty]
+        for i = 1, progress.total do
+            local star_obj_id = "star_" .. i
+            local obj = self.objects[star_obj_id]
+            if obj then
+                self.objects[star_obj_id] = nil
+            end
+        end
     end
 
     self.difficulty = difficulty
@@ -432,7 +434,6 @@ function MainMenu:show_levels(difficulty)
         ox = txt_diff_width * 0.5, oy = txt_diff_height * 0.5,
         is_clickable = false, is_hoverable = false,
         alpha = 0,
-        fade_amount = 3,
     })
 
     local box = self.objects.box
@@ -447,7 +448,6 @@ function MainMenu:show_levels(difficulty)
         sx = 0.5, sy = 0.5,
         ox = left_arrow_width * 0.5,
         oy = left_arrow_height * 0.5,
-        fade_amount = 3,
     })
 
     self.objects.left_arrow.on_clicked = function()
@@ -455,14 +455,14 @@ function MainMenu:show_levels(difficulty)
             self.objects.reset_levels:update_y(self.objects.reset_levels.y)
 
             for _, obj in ipairs(self.group_stage) do
-                obj.fade = -1
+                obj.alpha = 0
                 obj.is_clickable = false
                 obj.is_hoverable = false
             end
-            for _, obj in ipairs(self.group_difficulty) do obj.fade = 1 end
-            self.objects.box.fade = -1
-            self.objects.left_arrow.fade = -1
-            self.objects.right_arrow.fade = -1
+            for _, obj in ipairs(self.group_difficulty) do obj.alpha = 1 end
+            self.objects.box.alpha = 0
+            self.objects.left_arrow.alpha = 0
+            self.objects.right_arrow.alpha = 0
 
             self.objects.back.is_clickable = true
             self.objects.easy.is_clickable = true
@@ -490,7 +490,6 @@ function MainMenu:show_levels(difficulty)
             sx = 0.5, sy = 0.5,
             ox = right_arrow_width * 0.5,
             oy = right_arrow_height * 0.5,
-            fade_amount = 3,
         })
 
         self.objects.right_arrow.on_clicked = function()
@@ -509,10 +508,10 @@ function MainMenu:show_levels(difficulty)
     local star_width, star_height = image_star:getDimensions()
     local ix, iy = 1, 1
     local progress = UserData.data.progress[difficulty]
-    local limit = progress.total * 0.5
+    local limit = 5
     local scale = 1.25
-    local gap_x = (bx + bw)/star_width * limit
-    local gap_y = (by + bh)/star_height * limit
+    local gap_x = star_width * scale
+    local gap_y = star_height * scale
     bx = bx + gap_x * 0.5
     by = by + gap_y * 0.5
 
@@ -544,7 +543,7 @@ function MainMenu:show_levels(difficulty)
         local text = is_unlocked and tostring(i) or ""
 
         local star_obj_id = "star_" .. i
-        self.objects[star_obj_id] = Button({
+        local star_obj = Button({
             image = is_unlocked and image_star or image_locked_star,
             x = star_x, y = star_y,
             sx = scale, sy = scale,
@@ -557,19 +556,24 @@ function MainMenu:show_levels(difficulty)
             text_color = text_color,
             tox = Resources.font:getWidth(text) * 0.5,
             toy = Resources.font:getHeight() * 0.5,
-            fade_amount = 3,
         })
+        self.objects[star_obj_id] = star_obj
 
-        table.insert(self.group_stage, self.objects[star_obj_id])
+        star_obj.on_clicked = function()
+            local next_state = require("game")
+            StateManager:switch(next_state, difficulty, i)
+        end
+
+        table.insert(self.group_stage, star_obj)
     end
 
     for _, obj in ipairs(self.group_difficulty) do
-        obj.fade = -1
+        obj.alpha = 0
         obj.is_clickable = false
     end
 
     for _, obj in ipairs(self.group_stage) do
-        obj.fade = 1
+        obj.alpha = 1
     end
 end
 
@@ -586,7 +590,6 @@ function MainMenu:draw()
     love.graphics.setColor(1, 1, 1, 1)
 
     local window_width, window_height = love.graphics.getDimensions()
-
     local bg_width, bg_height = self.images.background:getDimensions()
     local bg_scale_x = window_width/bg_width
     local bg_scale_y = window_height/bg_height

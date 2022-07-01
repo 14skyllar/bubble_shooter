@@ -3,9 +3,9 @@ require("libs.batteries"):export()
 local Dev = require("dev")
 local MainMenu = require("main_menu")
 local Resources = require("resources")
+local StateManager = require("state_manager")
 local UserData = require("user_data")
 
-local current_scene
 local canvas
 -- local scale_x, scale_y
 
@@ -21,12 +21,14 @@ function love.load()
 
     canvas = love.graphics.newCanvas(target_width, target_height)
 
-    current_scene = MainMenu()
-    current_scene:load()
+    local Game = require("game")
+    StateManager.current = Game("easy", 1)
+    -- StateManager.current = MainMenu()
+    StateManager:load()
 end
 
 function love.update(dt)
-    current_scene:update(dt)
+    StateManager:update(dt)
 end
 
 function love.draw()
@@ -35,7 +37,7 @@ function love.draw()
 
         love.graphics.push()
             -- love.graphics.scale(scale_x, scale_y)
-            current_scene:draw()
+            StateManager:draw()
         love.graphics.pop()
     love.graphics.setCanvas()
 
@@ -45,11 +47,11 @@ function love.draw()
 end
 
 function love.mousepressed(mx, my, mb)
-    current_scene:mousepressed(mx, my, mb)
+    StateManager:mousepressed(mx, my, mb)
 end
 
 function love.mousereleased(mx, my, mb)
-    current_scene:mousereleased(mx, my, mb)
+    StateManager:mousereleased(mx, my, mb)
 end
 
 function love.keypressed(key)

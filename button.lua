@@ -24,10 +24,8 @@ function Button:new(opts)
 
     self.mouse = vec2()
     self.is_overlap = false
-    self.fade = opts.fade or 0
     self.alpha = opts.alpha or 1
     self.max_alpha = opts.max_alpha or 1
-    self.fade_amount = opts.fade_amount or 1
     self.is_clickable = true
     self.is_hoverable = true
 
@@ -57,16 +55,6 @@ function Button:update_y(y)
 end
 
 function Button:update(dt)
-    if self.fade ~= 0 then
-        self.alpha = self.alpha + self.fade_amount * self.fade * dt
-
-        if self.alpha <= 0 then
-            self.fade = 0
-        elseif self.alpha >= self.max_alpha then
-            self.fade = 0
-        end
-    end
-
     local mx, my = love.mouse.getPosition()
     self.mouse.x, self.mouse.y = mx, my
     self.is_overlap = intersect.point_aabb_overlap(self.mouse, self.center_pos, self.half_size)
@@ -89,9 +77,15 @@ function Button:draw()
             love.graphics.setFont(self.font)
         end
 
+        local tsx, tsy = 1, 1
+        if self.is_hoverable and self.is_overlap then
+            tsx = tsx + self.sx_dt
+            tsy = tsy + self.sy_dt
+        end
+
         local tr, tg, tb = unpack(self.text_color)
         love.graphics.setColor(tr, tg, tb, self.alpha)
-        love.graphics.print(self.text, self.tx, self.ty, 0, 1, 1, self.tox, self.toy)
+        love.graphics.print(self.text, self.tx, self.ty, 0, tsx, tsy, self.tox, self.toy)
 
         if self.font then
             love.graphics.setFont(tmp_font)
