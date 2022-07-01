@@ -58,7 +58,8 @@ Resources.images = {
 
 Resources.sources = {
     MainMenu = {
-        -- {id = "bgm", kind = "stream"}
+        {id = "bgm_gameplay", kind = "stream"},
+        {id = "snd_buttons", kind = "static"},
     },
 
     Game = {

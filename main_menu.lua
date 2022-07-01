@@ -32,6 +32,9 @@ function MainMenu:new()
 end
 
 function MainMenu:load()
+    self.sources.bgm_gameplay:play()
+    self.sources.bgm_gameplay:setLooping(true)
+
     local window_width, window_height = love.graphics.getDimensions()
     local half_window_width = window_width * 0.5
     local half_window_height = window_height * 0.5
@@ -43,6 +46,7 @@ function MainMenu:load()
         sx = 0.5, sy = 0.5,
         ox = title_width * 0.5, oy = title_height * 0.5,
         is_hoverable = false,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local button_scale = 0.6
@@ -52,8 +56,8 @@ function MainMenu:load()
         x = half_window_width, y = half_window_height,
         sx = button_scale, sy = button_scale,
         ox = play_width * 0.5, oy = play_height * 0.5,
-    }
-    )
+        on_click_sound = self.sources.snd_buttons,
+    })
 
     local quit_width, quit_height = self.images.button_quit:getDimensions()
     local quit_y = half_window_height + quit_height
@@ -62,6 +66,7 @@ function MainMenu:load()
         x = half_window_width, y = quit_y,
         sx = button_scale, sy = button_scale,
         ox = quit_width * 0.5, oy = quit_height * 0.5,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local offset = 32
@@ -73,7 +78,8 @@ function MainMenu:load()
         image = self.images.button_settings,
         x = offset, y = bottom_y,
         sx = button2_scale, sy = button2_scale,
-        ox = settings_width * 0.5, oy = settings_height * 0.5
+        ox = settings_width * 0.5, oy = settings_height * 0.5,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local scoreboard_width, scoreboard_height = self.images.button_scoreboard:getDimensions()
@@ -82,6 +88,7 @@ function MainMenu:load()
         x = window_width - offset, y = bottom_y,
         sx = button2_scale, sy = button2_scale,
         ox = scoreboard_width * 0.5, oy = scoreboard_height * 0.5,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local box_width, box_height = self.images.box:getDimensions()
@@ -102,6 +109,7 @@ function MainMenu:load()
         ox = close_width * 0.5, oy = close_height * 0.5,
         alpha = 0,
         is_clickable = false,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local back_width, back_height = self.images.button_back:getDimensions()
@@ -111,7 +119,8 @@ function MainMenu:load()
         y = self.objects.box.y + self.objects.box.oy * 0.5,
         sx = 0.5, sy = 0.5,
         ox = back_width * 0.5, oy = back_height * 0.5,
-        alpha = 0
+        alpha = 0,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local txt_settings_width, txt_settings_height = self.images.text_settings:getDimensions()
@@ -216,6 +225,7 @@ function MainMenu:load()
         sx = 0.75, sy = 0.75,
         ox = reset_levels_width * 0.5, oy = reset_levels_height * 0.5,
         alpha = 0,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local txt_difficulty_width, txt_difficulty_height = self.images.text_difficulty:getDimensions()
@@ -239,6 +249,7 @@ function MainMenu:load()
         ox = easy_width * 0.5, oy = easy_height * 0.5,
         is_clickable = false,
         alpha = 0,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local medium_width, medium_height = self.images.button_medium:getDimensions()
@@ -250,6 +261,7 @@ function MainMenu:load()
         ox = medium_width * 0.5, oy = medium_height * 0.5,
         is_clickable = false,
         alpha = 0,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     local hard_width, hard_height = self.images.button_hard:getDimensions()
@@ -261,6 +273,7 @@ function MainMenu:load()
         ox = hard_width * 0.5, oy = hard_height * 0.5,
         is_clickable = false,
         alpha = 0,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     self.group_main = {
@@ -446,6 +459,7 @@ function MainMenu:show_levels(difficulty)
         sx = 0.5, sy = 0.5,
         ox = left_arrow_width * 0.5,
         oy = left_arrow_height * 0.5,
+        on_click_sound = self.sources.snd_buttons,
     })
 
     self.objects.left_arrow.on_clicked = function()
@@ -488,6 +502,7 @@ function MainMenu:show_levels(difficulty)
             sx = 0.5, sy = 0.5,
             ox = right_arrow_width * 0.5,
             oy = right_arrow_height * 0.5,
+        on_click_sound = self.sources.snd_buttons,
         })
 
         self.objects.right_arrow.on_clicked = function()
@@ -554,6 +569,7 @@ function MainMenu:show_levels(difficulty)
             text_color = text_color,
             tox = Resources.font:getWidth(text) * 0.5,
             toy = Resources.font:getHeight() * 0.5,
+            on_click_sound = self.sources.snd_buttons,
         })
         self.objects[star_obj_id] = star_obj
 
@@ -621,6 +637,12 @@ function MainMenu:mousereleased(mx, my, mb)
         if btn then
             btn:mousereleased(mx, my, mb)
         end
+    end
+end
+
+function MainMenu:exit()
+    for _, source in pairs(self.sources) do
+        source:stop()
     end
 end
 

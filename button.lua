@@ -28,6 +28,7 @@ function Button:new(opts)
     self.max_alpha = opts.max_alpha or 1
     self.is_clickable = true
     self.is_hoverable = true
+    self.on_click_sound = opts.on_click_sound
 
     if opts.is_clickable ~= nil then
         self.is_clickable = opts.is_clickable
@@ -103,6 +104,10 @@ end
 function Button:mousepressed(mx, my, mb)
     if not self.is_clickable then return end
     if mb == 1 and self.is_overlap and self.on_clicked then
+        if self.on_click_sound then
+            self.on_click_sound:play()
+            self.on_click_sound:setLooping(false)
+        end
         self:on_clicked()
         return true
     end
