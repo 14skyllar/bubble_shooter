@@ -54,6 +54,7 @@ Resources.images = {
     Easy = {
         "heart", "label", "settings", "shooter",
     },
+    BubblesEasy = {}
 }
 
 Resources.sources = {
@@ -70,6 +71,11 @@ function Resources:init()
     local path = "assets/"
     self.font = love.graphics.newFont(path .. self.fonts.roboto_bold, 20)
     self.game_font = love.graphics.newFont(path .. self.fonts.roboto_bold, 16)
+
+    local bubbles_easy = love.filesystem.getDirectoryItems(path .. "images/BubblesEasy")
+    for i, filename in ipairs(bubbles_easy) do
+        self.images.BubblesEasy[i] = filename:sub(0, -5)
+    end
 end
 
 return Resources

@@ -1,3 +1,4 @@
+local Bubble = require("bubble")
 local Button = require("button")
 local Resources = require("resources")
 local Utils = require("utils")
@@ -24,16 +25,18 @@ function Game:new(difficulty, level, hearts)
     assert(self.rows ~= nil and self.rows > 0)
 
     local diff = string.upper(difficulty:sub(1, 1)) .. difficulty:sub(2)
+    self.images_bubbles = Utils.load_images("Bubbles" .. diff)
     self.images_common = Utils.load_images(id)
     self.images = Utils.load_images(diff)
     self.sources = Utils.load_sources(id)
+    self.bubbles_key = tablex.keys(self.images_bubbles)
 
     self.border = {}
     self.objects = {}
     self.bubbles = {}
     self.objects_order = {
         "score_holder", "life_holder", "time_holder", "label", "settings",
-        "shooter", "base", "shuffle",
+        "base", "shooter", "ammo", "shuffle",
         "txt_ready_go",
     }
 
@@ -109,15 +112,15 @@ function Game:load()
         toy = Resources.game_font:getHeight() * 0.5
     })
 
-    local bubble_width, bubble_height = self.images_common.bubble:getDimensions()
-    local bubble_scale = 0.4
-    local bubble_count = math.floor(window_width/(bubble_width * bubble_scale)) + 1
-    local bubble_y = (self.objects.time_holder.y + time_holder_height * ui_scale) + (gap * 3)
-    for i = 1, bubble_count do
+    local border_width, border_height = self.images_common.bubble:getDimensions()
+    local border_scale = 0.4
+    local border_count = math.floor(window_width/(border_width * border_scale)) + 1
+    local border_y = (self.objects.time_holder.y + time_holder_height * ui_scale) + (gap * 3)
+    for i = 1, border_count do
         self.border[i] = {
             image = self.images_common.bubble,
-            x = (i - 1) * bubble_width * bubble_scale, y = bubble_y,
-            scale = bubble_scale,
+            x = (i - 1) * border_width * border_scale, y = border_y,
+            scale = border_scale,
         }
     end
 
@@ -181,7 +184,7 @@ function Game:load()
     local shuffle_scale = 1.25
     self.objects.shuffle = Button({
         image = self.images_common.shuffle,
-        x = gap * 6,
+        x = gap * 5,
         y = self.objects.base.y - shuffle_height,
         sx = shuffle_scale, sy = shuffle_scale,
         ox = shuffle_width * 0.5, oy = shuffle_height * 0.5,
@@ -204,17 +207,41 @@ function Game:load()
             self.objects.shuffle.is_clickable = true
             self.objects.settings.is_clickable = true
             self.objects.settings.is_hoverable = true
+            -- self:reload()
         end)
     end)
 
-    local rad = 16
+    local bubble_scale = 2
     for i = 1, self.rows do
-        self.bubbles[i] = {
-            x = gap + rad * 2 * (i - 1),
-            y = bubble_y + bubble_height * bubble_scale + rad,
-            rad = rad,
-        }
+        local key = tablex.pick_random(self.bubbles_key)
+        local image = self.images_bubbles[key]
+        local width, height = image:getDimensions()
+        local bx = gap + width * bubble_scale
+
+        self.bubbles[i] = Bubble({
+            image = image,
+            x = bx + width * bubble_scale * (i - 1),
+            y = border_y + (border_height * border_scale) + height,
+            sx = bubble_scale, sy = bubble_scale,
+            ox = width * 0.5, oy = height * 0.5,
+        })
     end
+    self:reload()
+end
+
+function Game:reload()
+    local key = tablex.pick_random(self.bubbles_key)
+    local image = self.images_bubbles[key]
+    local width, height = image:getDimensions()
+    local bubble_scale = 2
+    local shooter = self.objects.shooter
+
+    self.objects.ammo = Bubble({
+        image = image,
+        x = shooter.x, y = shooter.y,
+        sx = bubble_scale, sy = bubble_scale,
+        ox = width * 0.5, oy = height * 0.75,
+    })
 end
 
 function Game:update(dt)
@@ -233,6 +260,10 @@ function Game:update(dt)
         local r = -math.atan2(dx, dy)
         r = mathx.clamp(r, -0.9, 0.9)
         self.objects.shooter.r = r
+
+        if self.objects.ammo then
+            self.objects.ammo.r = r
+        end
     end
 
     for _, id in ipairs(self.objects_order) do
@@ -261,7 +292,7 @@ function Game:draw()
     end
 
     for _, bubble in ipairs(self.bubbles) do
-        love.graphics.circle("line", bubble.x, bubble.y, bubble.rad)
+        bubble:draw()
     end
 
     for _, id in ipairs(self.objects_order) do
