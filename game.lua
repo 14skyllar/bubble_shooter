@@ -6,6 +6,12 @@ local Game = class({
     name = "Game"
 })
 
+local rows = {
+    easy = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+    medium = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17},
+    hard = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22},
+}
+
 function Game:new(difficulty, level, hearts)
     local id = self:type()
     self.difficulty = difficulty
@@ -14,18 +20,21 @@ function Game:new(difficulty, level, hearts)
     self.max_hearts = 3
     self.time = 0
     self.start = false
-
-    self.images_common = Utils.load_images(id)
+    self.rows = rows[difficulty][level]
+    assert(self.rows ~= nil and self.rows > 0)
 
     local diff = string.upper(difficulty:sub(1, 1)) .. difficulty:sub(2)
+    self.images_common = Utils.load_images(id)
     self.images = Utils.load_images(diff)
     self.sources = Utils.load_sources(id)
 
     self.border = {}
     self.objects = {}
+    self.bubbles = {}
     self.objects_order = {
         "score_holder", "life_holder", "time_holder", "label", "settings",
-        "shooter", "base", "txt_ready_go",
+        "shooter", "base", "shuffle",
+        "txt_ready_go",
     }
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
@@ -100,7 +109,7 @@ function Game:load()
         toy = Resources.game_font:getHeight() * 0.5
     })
 
-    local bubble_width = self.images_common.bubble:getWidth()
+    local bubble_width, bubble_height = self.images_common.bubble:getDimensions()
     local bubble_scale = 0.4
     local bubble_count = math.floor(window_width/(bubble_width * bubble_scale)) + 1
     local bubble_y = (self.objects.time_holder.y + time_holder_height * ui_scale) + (gap * 3)
@@ -168,6 +177,17 @@ function Game:load()
         alpha = 0
     })
 
+    local shuffle_width, shuffle_height = self.images_common.shuffle:getDimensions()
+    local shuffle_scale = 1.25
+    self.objects.shuffle = Button({
+        image = self.images_common.shuffle,
+        x = gap * 6,
+        y = self.objects.base.y - shuffle_height,
+        sx = shuffle_scale, sy = shuffle_scale,
+        ox = shuffle_width * 0.5, oy = shuffle_height * 0.5,
+        is_clickable = false, is_hoverable = false
+    })
+
     local fade_in_sec = 2
     local fade_out_sec = 1
 
@@ -178,8 +198,23 @@ function Game:load()
         self.ready_fade_timer = timer(fade_out_sec, function(progress)
             local txt_ready_go = self.objects.txt_ready_go
             txt_ready_go.alpha = 1 - progress
-        end, function() self.start = true end)
+        end, function()
+            self.start = true
+            self.objects.shuffle.is_hoverable = true
+            self.objects.shuffle.is_clickable = true
+            self.objects.settings.is_clickable = true
+            self.objects.settings.is_hoverable = true
+        end)
     end)
+
+    local rad = 16
+    for i = 1, self.rows do
+        self.bubbles[i] = {
+            x = gap + rad * 2 * (i - 1),
+            y = bubble_y + bubble_height * bubble_scale + rad,
+            rad = rad,
+        }
+    end
 end
 
 function Game:update(dt)
@@ -195,8 +230,9 @@ function Game:update(dt)
         local mx, my = love.mouse.getPosition()
         local dx = shooter.x - mx
         local dy = shooter.y - my
-        local r = math.atan2(dx, dy)
-        self.objects.shooter.r = -r
+        local r = -math.atan2(dx, dy)
+        r = mathx.clamp(r, -0.9, 0.9)
+        self.objects.shooter.r = r
     end
 
     for _, id in ipairs(self.objects_order) do
@@ -220,8 +256,12 @@ function Game:draw()
         bg_scale_x, bg_scale_y
     )
 
-    for _, bubble in ipairs(self.border) do
-        love.graphics.draw(bubble.image, bubble.x, bubble.y, 0, bubble.scale, bubble.scale)
+    for _, border in ipairs(self.border) do
+        love.graphics.draw(border.image, border.x, border.y, 0, border.scale, border.scale)
+    end
+
+    for _, bubble in ipairs(self.bubbles) do
+        love.graphics.circle("line", bubble.x, bubble.y, bubble.rad)
     end
 
     for _, id in ipairs(self.objects_order) do
