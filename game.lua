@@ -13,6 +13,7 @@ function Game:new(difficulty, level, hearts)
     self.hearts = hearts or 3
     self.max_hearts = 3
     self.time = 0
+    self.start = false
 
     self.images_common = Utils.load_images(id)
 
@@ -23,7 +24,8 @@ function Game:new(difficulty, level, hearts)
     self.border = {}
     self.objects = {}
     self.objects_order = {
-        "score_holder", "life_holder", "time_holder", "label",
+        "score_holder", "life_holder", "time_holder", "label", "settings",
+        "shooter", "base", "txt_ready_go",
     }
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
@@ -110,18 +112,93 @@ function Game:load()
         }
     end
 
-    local label_width, label_height = self.images.label:getDimensions()
+    local label_height = self.images.label:getHeight()
     local label_scale = 0.8
     self.objects.label = Button({
         image = self.images.label,
         x = gap, y = window_height - gap,
-        sx = label_scale, sy = label_scale,
+        sx = label_scale,
+        sy = label_scale + 0.1,
         ox = 0, oy = label_height,
         is_hoverable = false, is_clickable = false
     })
+
+    local settings_width, settings_height = self.images.settings:getDimensions()
+    local settings_scale = 0.5
+    self.objects.settings = Button({
+        image = self.images.settings,
+        x = window_width - gap, y = window_height - gap,
+        sx = settings_scale, sy = settings_scale,
+        ox = settings_width, oy = settings_height,
+        is_hoverable = false, is_clickable = false,
+    })
+
+    local base_width, base_height = self.images_common.base:getDimensions()
+    local base_scale = 0.25
+    self.objects.base = Button({
+        image = self.images_common.base,
+        x = half_window_width,
+        y = (window_height - gap) - (label_height * label_scale) - gap,
+        sx = base_scale, sy = base_scale,
+        ox = base_width * 0.5, oy = base_height,
+        is_hoverable = false, is_clickable = false,
+    })
+
+    local shooter_width, shooter_height = self.images.shooter:getDimensions()
+    local shooter_scale = 0.25
+    self.objects.shooter = Button({
+        image = self.images.shooter,
+        x = half_window_width,
+        y = self.objects.base.y - base_height * base_scale,
+        sx = shooter_scale, sy = shooter_scale,
+        ox = shooter_width * 0.5, oy = shooter_height * 0.75,
+        is_hoverable = false, is_clickable = false,
+    })
+
+    local txt_ready_go_width, txt_ready_go_height = self.images_common.text_ready_go:getDimensions()
+    local txt_ready_go_scale = (window_width - (gap * 2))/txt_ready_go_width
+
+    self.objects.txt_ready_go = Button({
+        image = self.images_common.text_ready_go,
+        x = half_window_width,
+        y = half_window_height,
+        sx = txt_ready_go_scale, sy = txt_ready_go_scale,
+        ox = txt_ready_go_width * 0.5, oy = txt_ready_go_height * 0.5,
+        is_hoverable = false, is_clickable = false,
+        alpha = 0
+    })
+
+    local fade_in_sec = 2
+    local fade_out_sec = 1
+
+    self.ready_timer = timer(fade_in_sec, function(progress)
+        local txt_ready_go = self.objects.txt_ready_go
+        txt_ready_go.alpha = progress
+    end, function()
+        self.ready_fade_timer = timer(fade_out_sec, function(progress)
+            local txt_ready_go = self.objects.txt_ready_go
+            txt_ready_go.alpha = 1 - progress
+        end, function() self.start = true end)
+    end)
 end
 
 function Game:update(dt)
+    if not self.start then
+        self.ready_timer:update(dt)
+        if self.ready_fade_timer then
+            self.ready_fade_timer:update(dt)
+        end
+    end
+
+    if self.start then
+        local shooter = self.objects.shooter
+        local mx, my = love.mouse.getPosition()
+        local dx = shooter.x - mx
+        local dy = shooter.y - my
+        local r = math.atan2(dx, dy)
+        self.objects.shooter.r = -r
+    end
+
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn then

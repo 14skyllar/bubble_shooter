@@ -16,6 +16,8 @@ function Dev:keypressed(key)
         self.is_enabled = not self.is_enabled
     elseif key == "d" then
         love.filesystem.remove(UserData.filename)
+    elseif key == "r" then
+        love.event.quit("restart")
     end
 end
 

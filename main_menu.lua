@@ -17,13 +17,11 @@ function MainMenu:new()
     self.objects = {}
     self.objects_order = {
         "title", "play", "quit", "settings", "scoreboard", "box",
-        "txt_settings", "txt_volume",
-        "txt_scoreboard", "box_easy", "box_medium", "box_hard", "close",
-        "txt_easy_score", "txt_medium_score", "txt_hard_score",
-        "txt_difficulty", "easy", "medium", "hard",
-        "txt_easy", "txt_medium", "txt_hard",
-        "left_arrow", "right_arrow",
-        "slider", "reset_levels", "back",
+        "txt_settings", "txt_volume", "txt_scoreboard", "box_easy",
+        "box_medium", "box_hard", "close", "txt_easy_score",
+        "txt_medium_score", "txt_hard_score", "txt_difficulty", "easy",
+        "medium", "hard", "txt_easy", "txt_medium", "txt_hard", "left_arrow",
+        "right_arrow", "slider", "reset_levels", "back",
     }
 
     for i = 1, UserData.data.progress.hard.total do

@@ -48,10 +48,11 @@ Resources.images = {
     Game = {
         "background", "heart_empty", "bubble",
         "score_holder", "life_holder", "time_holder",
+        "base", "text_ready_go",
     },
 
     Easy = {
-        "heart", "label",
+        "heart", "label", "settings", "shooter",
     },
 }
 
