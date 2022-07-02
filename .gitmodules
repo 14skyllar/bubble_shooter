@@ -1,0 +1,7 @@
+[submodule "libs/batteries"]
+	path = libs/batteries
+	url = https://github.com/1bardesign/batteries
+
+[submodule "libs/json"]
+	path = libs/json
+	url = https://github.com/rxi/json.lua

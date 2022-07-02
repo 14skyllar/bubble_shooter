@@ -21,9 +21,13 @@ function love.load()
 
     canvas = love.graphics.newCanvas(target_width, target_height)
 
+    -- to start in main menu, comment the next two lines
     local Game = require("game")
     StateManager.current = Game("easy", 1)
+
+    -- then uncomment this
     -- StateManager.current = MainMenu()
+
     StateManager:load()
 end
 
