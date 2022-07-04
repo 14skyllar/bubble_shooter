@@ -228,21 +228,52 @@ function Game:load()
         end)
     end)
 
-    local bubble_scale = 2
-    for i = 1, self.rows do
-        local key = tablex.pick_random(self.bubbles_key)
-        local image = self.images_bubbles[key]
-        local width, height = image:getDimensions()
-        local bx = gap + width * bubble_scale
+    self:create_bubbles(border_height, border_scale)
+end
 
-        self.bubbles[i] = Bubble({
-            image = image,
-            x = bx + width * bubble_scale * (i - 1),
-            y = self.border_y + (border_height * border_scale) + height * 0.5,
-            sx = bubble_scale, sy = bubble_scale,
-            ox = width * 0.5, oy = height * 0.5,
-        })
+function Game:create_bubbles(border_height, border_scale)
+    local half_window_width = love.graphics.getWidth() * 0.5
+    local bubble_scale = 2
+
+    if self.difficulty == "easy" then
+        for i = 0, self.rows - 1 do
+            local cols = self.rows - i
+            for j = 0, cols - 1 do
+                local key = tablex.pick_random(self.bubbles_key)
+                local image = self.images_bubbles[key]
+                local width, height = image:getDimensions()
+
+                local x = half_window_width - (cols * 0.5) * (width * bubble_scale)
+                x = x + (width * bubble_scale) * j
+
+                local y = self.border_y + (border_height * border_scale) + height * 0.5
+                y = y + height * bubble_scale * i
+
+                local bubble = Bubble({
+                    image = image,
+                    x = x, y = y,
+                    sx = bubble_scale, sy = bubble_scale,
+                    ox = width * 0.5, oy = height * 0.5,
+                })
+
+                table.insert(self.bubbles, bubble)
+            end
+        end
+    elseif self.difficulty == "medium" then
+
+    elseif self.difficulty == "hard" then
+
     end
+
+    -- compress initial bubbles
+    -- for _, bubble in ipairs(self.bubbles) do
+    --     bubble.vy = -8
+    --     bubble.y = bubble.y + bubble.vy * love.timer.getDelta()
+    --     for _, border in ipairs(self.border) do
+    --         bubble:check_collision(border, true)
+    --     end
+    --     bubble.vy = 0
+    -- end
 end
 
 function Game:reload()
@@ -290,8 +321,7 @@ function Game:update_target_path(mx, my)
         for _, bubble in ipairs(self.bubbles) do
             local bpos = vec2(bubble.x, bubble.y)
             local rad = bubble.rad * bubble.sx
-            local res = intersect.point_circle_overlap(v2, bpos, rad)
-            if res then
+            if intersect.point_circle_overlap(v2, bpos, rad) then
                 past_bubble = true
                 break
             end
@@ -394,7 +424,7 @@ function Game:draw()
     )
 
     if self.is_targeting then
-        love.graphics.setColor(1, 0, 0, 1)
+        love.graphics.setColor(1, 0, 0, 0.5)
         love.graphics.setLineWidth(4)
         for i = 3, #self.target_path do
             local v = self.target_path[i]
@@ -408,10 +438,6 @@ function Game:draw()
 
     for _, border in ipairs(self.border) do
         love.graphics.draw(border.image, border.x, border.y, 0, border.scale, border.scale, border.ox, border.oy)
-
-        love.graphics.setColor(1, 0, 0, 1)
-        love.graphics.circle("line", border.x, border.y, border.rad)
-        love.graphics.setColor(1, 1, 1, 1)
     end
 
     for _, bubble in ipairs(self.bubbles) do
