@@ -120,11 +120,18 @@ function Game:load()
     local border_scale = 0.4
     local border_count = math.floor(window_width/(border_width * border_scale)) + 1
     local border_y = (self.objects.time_holder.y + time_holder_height * ui_scale) + (gap * 3)
+    self.border_y = border_y + border_height * border_scale
+
     for i = 1, border_count do
         self.border[i] = {
             image = self.images_common.bubble,
-            x = (i - 1) * border_width * border_scale, y = border_y,
+            x = (i - 1) * border_width * border_scale,
+            y = self.border_y,
             scale = border_scale,
+            sx = border_scale, sy = border_scale,
+            ox = border_width * 0.5,
+            oy = border_height * 0.5,
+            rad = border_width * border_scale * 0.5,
         }
     end
 
@@ -217,7 +224,7 @@ function Game:load()
             self.objects.settings.is_clickable = true
             self.objects.settings.is_hoverable = true
             self.objects.txt_ready_go.alpha = 0
-            -- self:reload()
+            self:reload()
         end)
     end)
 
@@ -231,12 +238,11 @@ function Game:load()
         self.bubbles[i] = Bubble({
             image = image,
             x = bx + width * bubble_scale * (i - 1),
-            y = border_y + (border_height * border_scale) + height,
+            y = self.border_y + (border_height * border_scale) + height * 0.5,
             sx = bubble_scale, sy = bubble_scale,
             ox = width * 0.5, oy = height * 0.5,
         })
     end
-    self:reload()
 end
 
 function Game:reload()
@@ -246,11 +252,16 @@ function Game:reload()
     local bubble_scale = 2
     local shooter = self.objects.shooter
 
+    if self.objects.ammo then
+        table.insert(self.bubbles, self.objects.ammo)
+    end
+
     self.objects.ammo = Bubble({
         image = image,
         x = shooter.x, y = shooter.y,
         sx = bubble_scale, sy = bubble_scale,
         ox = width * 0.5, oy = height * 0.75,
+        main_oy = height * 0.5,
     })
 end
 
@@ -262,16 +273,51 @@ function Game:update_target_path(mx, my)
     local x, y = shooter.x, shooter.y
     local a = vec2(x, y)
     local b = vec2(mx, my)
-    local c = b:vsub(a):smul(2)
+    local c = b:vsub(a):smul(100)
     local d, len = c:normalise_both()
     local spacing = 16
+
+    local window_width, window_height = love.graphics.getDimensions()
     for _ = 0, len, spacing * 2 do
         local v1 = a:fma(d, spacing)
         local v2 = a:fma(d, spacing * 2)
+
+        local past_window_edges = (v1.x < 0 or v1.x > window_width) or
+            (v1.y < 0 or v1.y > window_height)
+        local past_border = (v2.y < self.border_y)
+
+        local past_bubble
+        for _, bubble in ipairs(self.bubbles) do
+            local bpos = vec2(bubble.x, bubble.y)
+            local rad = bubble.rad * bubble.sx
+            local res = intersect.point_circle_overlap(v2, bpos, rad)
+            if res then
+                past_bubble = true
+                break
+            end
+        end
+
+        if past_window_edges or past_border or past_bubble then
+            break
+        end
+
         local dash = {v1, v2}
         a = v2
         table.insert(self.target_path, dash)
     end
+end
+
+function Game:shoot(mx, my)
+    local ammo = self.objects.ammo
+    if not ammo then return end
+
+    local mpos = vec2(mx, my)
+    local ppos = vec2(ammo.x, ammo.y)
+    local diff = mpos:vsub(ppos)
+
+    ammo.vx = diff.x
+    ammo.vy = diff.y
+    ammo.oy = ammo.main_oy
 end
 
 function Game:update(dt)
@@ -292,8 +338,37 @@ function Game:update(dt)
         r = mathx.clamp(r, MIN_ANGLE, MAX_ANGLE)
         self.objects.shooter.r = r
 
-        if self.objects.ammo then
-            self.objects.ammo.r = r
+        local ammo = self.objects.ammo
+        if ammo then
+            local is_static = ammo.vx == 0 and ammo.vy == 0
+            if is_static then
+                self.objects.ammo.r = r
+            end
+            ammo:update(dt)
+
+            if not is_static then
+                for _, other in ipairs(self.bubbles) do
+                    if other ~= ammo then
+                        local is_hit = ammo:check_collision(other)
+                        if is_hit then
+                            self:reload()
+                            break
+                        end
+                    end
+                end
+
+                for _, other in ipairs(self.border) do
+                    if other ~= ammo then
+                        local is_hit = ammo:check_collision(other, true)
+                        if is_hit then
+                            self:reload()
+                            break
+                        end
+                    end
+                end
+            end
+
+            if ammo.is_dead then self:reload() end
         end
     end
 
@@ -327,11 +402,16 @@ function Game:draw()
             local x2, y2 = v[2]:unpack()
             love.graphics.line(x1, y1, x2, y2)
         end
+        love.graphics.setLineWidth(1)
         love.graphics.setColor(1, 1, 1, 1)
     end
 
     for _, border in ipairs(self.border) do
-        love.graphics.draw(border.image, border.x, border.y, 0, border.scale, border.scale)
+        love.graphics.draw(border.image, border.x, border.y, 0, border.scale, border.scale, border.ox, border.oy)
+
+        love.graphics.setColor(1, 0, 0, 1)
+        love.graphics.circle("line", border.x, border.y, border.rad)
+        love.graphics.setColor(1, 1, 1, 1)
     end
 
     for _, bubble in ipairs(self.bubbles) do
@@ -355,6 +435,7 @@ end
 function Game:mousereleased(mx, my, mb)
     if not self.start then return end
     self.is_targeting = false
+    self:shoot(mx, my)
 end
 
 function Game:mousemoved(mx, my, dmx, dmy, istouch)
