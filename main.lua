@@ -58,6 +58,10 @@ function love.mousereleased(mx, my, mb)
     StateManager:mousereleased(mx, my, mb)
 end
 
+function love.mousemoved(mx, my, dmx, dmy, istouch)
+    StateManager:mousemoved(mx, my, dmx, dmy, istouch)
+end
+
 function love.keypressed(key)
     Dev:keypressed(key)
 end

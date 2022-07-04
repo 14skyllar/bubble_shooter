@@ -12,6 +12,7 @@ local rows = {
     medium = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17},
     hard = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22},
 }
+local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
 
 function Game:new(difficulty, level, hearts)
     local id = self:type()
@@ -21,7 +22,10 @@ function Game:new(difficulty, level, hearts)
     self.max_hearts = 3
     self.time = 0
     self.start = false
+    self.is_targeting = false
+    self.target_path = {}
     self.rows = rows[difficulty][level]
+    self.rotation = 0
     assert(self.rows ~= nil and self.rows > 0)
 
     local diff = string.upper(difficulty:sub(1, 1)) .. difficulty:sub(2)
@@ -194,10 +198,15 @@ function Game:load()
     local fade_in_sec = 2
     local fade_out_sec = 1
 
+    --TODO remove these
+    fade_in_sec = 0.1
+    fade_out_sec = 0.1
+
     self.ready_timer = timer(fade_in_sec, function(progress)
         local txt_ready_go = self.objects.txt_ready_go
         txt_ready_go.alpha = progress
     end, function()
+        self.objects.txt_ready_go.alpha = 1
         self.ready_fade_timer = timer(fade_out_sec, function(progress)
             local txt_ready_go = self.objects.txt_ready_go
             txt_ready_go.alpha = 1 - progress
@@ -207,6 +216,7 @@ function Game:load()
             self.objects.shuffle.is_clickable = true
             self.objects.settings.is_clickable = true
             self.objects.settings.is_hoverable = true
+            self.objects.txt_ready_go.alpha = 0
             -- self:reload()
         end)
     end)
@@ -244,6 +254,26 @@ function Game:reload()
     })
 end
 
+function Game:update_target_path(mx, my)
+    local within_range = self.rotation >= MIN_ANGLE and self.rotation <= MAX_ANGLE
+    if not within_range then return end
+    tablex.clear(self.target_path)
+    local shooter = self.objects.shooter
+    local x, y = shooter.x, shooter.y
+    local a = vec2(x, y)
+    local b = vec2(mx, my)
+    local c = b:vsub(a):smul(2)
+    local d, len = c:normalise_both()
+    local spacing = 16
+    for _ = 0, len, spacing * 2 do
+        local v1 = a:fma(d, spacing)
+        local v2 = a:fma(d, spacing * 2)
+        local dash = {v1, v2}
+        a = v2
+        table.insert(self.target_path, dash)
+    end
+end
+
 function Game:update(dt)
     if not self.start then
         self.ready_timer:update(dt)
@@ -258,7 +288,8 @@ function Game:update(dt)
         local dx = shooter.x - mx
         local dy = shooter.y - my
         local r = -math.atan2(dx, dy)
-        r = mathx.clamp(r, -0.9, 0.9)
+        self.rotation = r
+        r = mathx.clamp(r, MIN_ANGLE, MAX_ANGLE)
         self.objects.shooter.r = r
 
         if self.objects.ammo then
@@ -287,6 +318,18 @@ function Game:draw()
         bg_scale_x, bg_scale_y
     )
 
+    if self.is_targeting then
+        love.graphics.setColor(1, 0, 0, 1)
+        love.graphics.setLineWidth(4)
+        for i = 3, #self.target_path do
+            local v = self.target_path[i]
+            local x1, y1 = v[1]:unpack()
+            local x2, y2 = v[2]:unpack()
+            love.graphics.line(x1, y1, x2, y2)
+        end
+        love.graphics.setColor(1, 1, 1, 1)
+    end
+
     for _, border in ipairs(self.border) do
         love.graphics.draw(border.image, border.x, border.y, 0, border.scale, border.scale)
     end
@@ -304,12 +347,24 @@ function Game:draw()
 end
 
 function Game:mousepressed(mx, my, mb)
+    if not self.start then return end
+    self.is_targeting = true
+    self:update_target_path(mx , my)
 end
 
 function Game:mousereleased(mx, my, mb)
+    if not self.start then return end
+    self.is_targeting = false
 end
 
-function Game:key(key)
+function Game:mousemoved(mx, my, dmx, dmy, istouch)
+    if not self.is_targeting then return end
+    if dmx ~= 0 or dmy ~= 0 then
+        self:update_target_path(mx, my)
+    end
+end
+
+function Game:keypressed(key)
 end
 
 return Game

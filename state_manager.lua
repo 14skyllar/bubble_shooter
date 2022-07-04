@@ -31,6 +31,12 @@ function StateManager:mousereleased(mx, my, mb)
     self.current:mousereleased(mx, my, mb)
 end
 
+function StateManager:mousemoved(mx, my, dmx, dmy, istouch)
+    if self.current.mousemoved then
+        self.current:mousemoved(mx, my, dmx, dmy, istouch)
+    end
+end
+
 function StateManager:keypressed(key)
     self.current:keypressed(key)
 end
