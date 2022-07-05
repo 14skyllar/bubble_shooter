@@ -201,6 +201,7 @@ function Game:load()
         ox = shuffle_width * 0.5, oy = shuffle_height * 0.5,
         is_clickable = false, is_hoverable = false
     })
+    self.objects.shuffle.on_clicked = function() self:shuffle() end
 
     local fade_in_sec = 2
     local fade_out_sec = 1
@@ -274,6 +275,17 @@ function Game:create_bubbles(border_height, border_scale)
     --     end
     --     bubble.vy = 0
     -- end
+end
+
+function Game:shuffle()
+    local temp_images = {}
+    for _, bubble in ipairs(self.bubbles) do
+        table.insert(temp_images, bubble.image)
+    end
+    for _, bubble in ipairs(self.bubbles) do
+        local new_image = tablex.take_random(temp_images)
+        bubble.image = new_image
+    end
 end
 
 function Game:reload()
@@ -454,12 +466,30 @@ end
 
 function Game:mousepressed(mx, my, mb)
     if not self.start then return end
+    for _, id in ipairs(self.objects_order) do
+        local btn = self.objects[id]
+        if btn and btn.mousepressed then
+            local res = btn:mousepressed(mx, my, mb)
+            if res then
+                btn.was_clicked = true
+                return
+            end
+        end
+    end
     self.is_targeting = true
     self:update_target_path(mx , my)
 end
 
 function Game:mousereleased(mx, my, mb)
     if not self.start then return end
+    for _, id in ipairs(self.objects_order) do
+        local btn = self.objects[id]
+        if btn and btn.was_clicked then
+            btn.was_clicked = false
+            return
+        end
+    end
+
     self.is_targeting = false
     self:shoot(mx, my)
 end
