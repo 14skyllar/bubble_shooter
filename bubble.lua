@@ -1,5 +1,11 @@
 local Dev = require("dev")
 
+local window_width, window_height = love.graphics.getDimensions()
+local l_start = vec2(0, 0)
+local l_end = vec2(0, window_height)
+local r_start = vec2(window_width, 0)
+local r_end = vec2(window_width, window_height)
+
 local Bubble = class({
     name = "Bubble"
 })
@@ -66,10 +72,20 @@ end
 function Bubble:update(dt)
     if self.is_dead then return end
     if self.is_hit then return end
+
+    local a = vec2(self.x, self.y)
+    local rad = self.rad * self.sx
+
+    local left = intersect.circle_line_collide(a, rad, l_start, l_end, 1)
+    local right = intersect.circle_line_collide(a, rad, r_start, r_end, 1)
+
+    if left or right then
+        self.vx = -self.vx
+    end
+
     self.x = self.x + self.vx * dt
     self.y = self.y + self.vy * dt
 
-    local window_width, window_height = love.graphics.getDimensions()
     local threshold = self.rad * 2
     self.is_dead = (self.x < -threshold) or (self.x > window_width + threshold) or
         (self.y < -threshold) or (self.y > window_height + threshold)

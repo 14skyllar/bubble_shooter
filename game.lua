@@ -610,9 +610,7 @@ function Game:update(dt)
     if self.start then
         local shooter = self.objects.shooter
         local mx, my = love.mouse.getPosition()
-        local dx = shooter.x - mx
-        local dy = shooter.y - my
-        local r = -math.atan2(dx, dy)
+        local r = Utils.get_angle(shooter, mx, my)
         self.rotation = r
         r = mathx.clamp(r, MIN_ANGLE, MAX_ANGLE)
         self.objects.shooter.r = r
@@ -749,6 +747,13 @@ function Game:mousereleased(mx, my, mb)
             btn.was_clicked = false
             return
         end
+    end
+
+    local r = Utils.get_angle(self.objects.shooter, mx, my)
+    if not (r >= MIN_ANGLE and r <= MAX_ANGLE) then
+        self.is_targeting = false
+        tablex.clear(self.target_path)
+        return
     end
 
     if self.start and self.is_targeting and not self.has_match then

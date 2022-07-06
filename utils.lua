@@ -24,4 +24,11 @@ function Utils.load_sources(current_scene_id)
     return sources
 end
 
+function Utils.get_angle(obj, x, y)
+    local dx = obj.x - x
+    local dy = obj.y - y
+    local r = -math.atan2(dx, dy)
+    return r
+end
+
 return Utils
