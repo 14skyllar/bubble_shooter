@@ -29,7 +29,9 @@ function Game:new(difficulty, level, hearts)
     self.max_hearts = 3
     self.time = 0
     self.start = false
+    self.is_question = false
     self.is_targeting = false
+    self.can_shoot = false
     self.target_path = {}
     self.rows = rows[difficulty][level]
     self.rotation = 0
@@ -54,10 +56,13 @@ function Game:new(difficulty, level, hearts)
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
 
-    self.current_question = 1
-    self.questions = require("questions." .. difficulty)
+    self.current_question = nil
+    self.questions = tablex.copy(require("questions." .. difficulty))
     self.n_choices = n_choices[difficulty]
     for i = 1, self.n_choices do table.insert(self.objects_order, "choice_" .. i) end
+
+    self.remaining_shots = 0
+    self.increase = 32
 end
 
 function Game:load()
@@ -232,14 +237,8 @@ function Game:load()
             local txt_ready_go = self.objects.txt_ready_go
             txt_ready_go.alpha = 1 - progress
         end, function()
-            -- self.start = true
-            -- self.objects.shuffle.is_hoverable = true
-            -- self.objects.shuffle.is_clickable = true
-            -- self.objects.settings.is_clickable = true
-            -- self.objects.settings.is_hoverable = true
             self.objects.txt_ready_go.alpha = 0
             self:show_question()
-            -- self:reload()
         end)
     end)
 
@@ -250,59 +249,144 @@ function Game:show_question()
     local padding = 64
     local window_width, window_height = love.graphics.getDimensions()
     local half_window_width = window_width * 0.5
-    local half_window_height = window_height * 0.5
     local bg_question_width, bg_question_height = self.images.bg_question:getDimensions()
     local sx = (window_width - padding)/bg_question_width
-    local sy = (window_height - padding)/bg_question_height
+    local sy = (window_height * 0.75 - padding)/bg_question_height
     local font = Resources.font
     local margin = 16
-    local question = self.questions[self.current_question]
+    local wy = window_height * 0.6
+    local ty = wy - bg_question_height * sy * 0.5 + margin
+    local limit = bg_question_width * sx - margin * 2
+
+    self.current_question = tablex.take_random(self.questions)
+    print("Remaining questions:", #self.questions)
 
     self.objects.bg_question = Button({
         image = self.images.bg_question,
-        x = half_window_width, y = half_window_height,
+        x = half_window_width,
+        y = wy,
         sx = sx, sy = sy,
-        ox = bg_question_width * 0.5, oy = bg_question_height * 0.5,
+        ox = bg_question_width * 0.5,
+        oy = bg_question_height * 0.5,
         is_hoverable = false, is_clickable = false,
         is_printf = true,
         font = font,
-        text = question.question,
+        text = self.current_question.question,
         text_color = {0, 0, 0},
         tx = half_window_width - bg_question_width * sx * 0.5 + margin,
-        ty = half_window_height - bg_question_height * sy * 0.5 + margin,
-        limit = bg_question_width * sx - margin * 2,
+        ty = ty,
+        limit = limit,
     })
 
     local choice_width, choice_height = self.images_common.box_choice:getDimensions()
-    local choice_sx = (window_width - padding * 1.5)/choice_width
-    local choice_sy = ((window_height * 0.5 - padding)/choice_height)/self.n_choices
-
+    local choice_sx = (window_width - padding * 2)/choice_width
+    local choice_sy = ((self.objects.bg_question.half_size.y - padding)/choice_height)/self.n_choices
     local ascii = 97
+
+    local _, wrap = font:getWrap(self.current_question.question, limit)
+    ty = ty + font:getHeight() * (#wrap + 2)
 
     for i = 1, self.n_choices do
         local key = "choice_" .. i
         local letter = string.char(ascii)
-        local str_question = question[letter]
+        local str_question = self.current_question[letter]
         local txt_width = font:getWidth(str_question)
         local txt_height = font:getHeight()
 
         self.objects[key] = Button({
             image = self.images_common.box_choice,
             x = half_window_width,
-            y = half_window_height + (choice_height + margin) * choice_sy * (i - 1),
-            sx = choice_sx, sy = choice_sy,
-            ox = choice_width * 0.5, oy = choice_height * 0.5,
+            y = ty + (choice_height + margin * 1.5) * choice_sy * (i - 1),
+            sx = choice_sx,
+            sy = choice_sy,
+            ox = choice_width * 0.5,
+            oy = choice_height * 0.5,
             font = font,
             text = str_question,
             tox = txt_width * 0.5,
             toy = txt_height * 0.5,
+            value = letter,
         })
+        self.objects[key].on_clicked = function()
+            self:check_answer(self.objects[key])
+        end
 
         ascii = ascii + 1
         if ascii > 100 then
             ascii = 97
         end
     end
+
+    self.is_question = true
+    self.can_shoot = true
+end
+
+function Game:check_answer(choice_obj)
+    for i = 1, self.n_choices do
+        local obj = self.objects["choice_" .. i]
+        obj.is_hoverable = false
+        obj.is_clickable = false
+    end
+
+    if choice_obj.value == self.current_question.answer then
+        print("correct")
+        self:correct_answer()
+        choice_obj.text_color = {0, 1, 0}
+    else
+        print("wrong")
+        self:wrong_answer()
+        choice_obj.text_color = {1, 0, 0}
+    end
+end
+
+function Game:correct_answer()
+    self.wait_timer = timer(1.5,
+        function(progress)
+            self.objects.bg_question.alpha = 1 - progress
+            for i = 1, self.n_choices do
+                self.objects["choice_" .. i].alpha = 1 - progress
+            end
+        end,
+        function()
+            self.objects.shuffle.is_hoverable = true
+            self.objects.shuffle.is_clickable = true
+            self.objects.settings.is_clickable = true
+            self.objects.settings.is_hoverable = true
+            self.objects.bg_question = nil
+            for i = 1, self.n_choices do
+                self.objects["choice_" .. i] = nil
+            end
+            self.remaining_shots = 3
+            self.start = true
+            self.is_question = false
+            self:reload()
+            self.wait_timer = nil
+        end)
+end
+
+function Game:wrong_answer()
+    if #self.questions == 0 then
+        self.questions = tablex.copy(require("questions." .. self.difficulty))
+    end
+    self.border_move = true
+
+    for _, border in ipairs(self.border) do border.target_y = border.y + self.increase end
+    for _, bubble in ipairs(self.bubbles) do bubble.target_y = bubble.y + self.increase end
+    self.border_y = self.border_y + self.increase
+
+    self.border_move_timer = timer(1.5,
+        function(progress)
+            for _, border in ipairs(self.border) do
+                border.y = mathx.lerp(border.y, border.target_y, progress)
+            end
+            for _, bubble in ipairs(self.bubbles) do
+                bubble.y = mathx.lerp(bubble.y, bubble.target_y, progress)
+            end
+        end,
+        function()
+            self:show_question()
+        end
+    )
 end
 
 function Game:create_bubbles(border_height, border_scale)
@@ -361,16 +445,27 @@ function Game:shuffle()
     end
 end
 
+function Game:after_shoot()
+    if self.objects.ammo then
+        table.insert(self.bubbles, self.objects.ammo)
+    end
+
+    if self.remaining_shots == 0 and not self.is_question then
+        self.can_shoot = false
+        self.objects.ammo = nil
+        self.wait_timer = timer(0.5, nil, function() self:show_question() end)
+    else
+        self:reload()
+        self.can_shoot = true
+    end
+end
+
 function Game:reload()
     local key = tablex.pick_random(self.bubbles_key)
     local image = self.images_bubbles[key]
     local width, height = image:getDimensions()
     local bubble_scale = 2
     local shooter = self.objects.shooter
-
-    if self.objects.ammo then
-        table.insert(self.bubbles, self.objects.ammo)
-    end
 
     self.objects.ammo = Bubble({
         image = image,
@@ -443,6 +538,8 @@ function Game:update(dt)
         end
     end
 
+    if self.wait_timer then self.wait_timer:update(dt) end
+
     if self.start then
         local shooter = self.objects.shooter
         local mx, my = love.mouse.getPosition()
@@ -466,7 +563,7 @@ function Game:update(dt)
                     if other ~= ammo then
                         local is_hit = ammo:check_collision(other)
                         if is_hit then
-                            self:reload()
+                            self:after_shoot()
                             break
                         end
                     end
@@ -476,7 +573,7 @@ function Game:update(dt)
                     if other ~= ammo then
                         local is_hit = ammo:check_collision(other, true)
                         if is_hit then
-                            self:reload()
+                            self:after_shoot()
                             break
                         end
                     end
@@ -485,6 +582,10 @@ function Game:update(dt)
 
             if ammo.is_dead then self:reload() end
         end
+    end
+
+    if self.border_move then
+        self.border_move_timer:update(dt)
     end
 
     for _, id in ipairs(self.objects_order) do
@@ -538,7 +639,6 @@ function Game:draw()
 end
 
 function Game:mousepressed(mx, my, mb)
-    if not self.start then return end
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn and btn.mousepressed then
@@ -549,12 +649,14 @@ function Game:mousepressed(mx, my, mb)
             end
         end
     end
-    self.is_targeting = true
-    self:update_target_path(mx , my)
+
+    if self.start and self.can_shoot then
+        self.is_targeting = true
+        self:update_target_path(mx , my)
+    end
 end
 
 function Game:mousereleased(mx, my, mb)
-    if not self.start then return end
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn and btn.was_clicked then
@@ -563,8 +665,14 @@ function Game:mousereleased(mx, my, mb)
         end
     end
 
-    self.is_targeting = false
-    self:shoot(mx, my)
+    if self.start and self.is_targeting then
+        self.is_targeting = false
+        if self.can_shoot and self.remaining_shots > 0 then
+            self.can_shoot = false
+            self:shoot(mx, my)
+            self.remaining_shots = self.remaining_shots - 1
+        end
+    end
 end
 
 function Game:mousemoved(mx, my, dmx, dmy, istouch)

@@ -48,6 +48,8 @@ function Button:new(opts)
     self.is_printf = opts.is_printf
     self.limit = opts.limit
     self.align = opts.align or "left"
+
+    self.value = opts.value
 end
 
 function Button:update_y(y)
