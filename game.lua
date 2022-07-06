@@ -21,6 +21,21 @@ local n_choices = {
 
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
 
+local fade_in_sec = 2
+local fade_out_sec = 1
+local info_show_dur = 1.5
+local info_dur = 0.5
+local wrong_dur = 1.5
+local pop_dur = 1
+
+--TODO remove these
+fade_in_sec = 0.1
+fade_out_sec = 0.1
+info_show_dur = 0.1
+info_dur = 0.1
+wrong_dur = 0.1
+pop_dur = 0.25
+
 function Game:new(difficulty, level, hearts)
     local id = self:type()
     self.difficulty = difficulty
@@ -222,13 +237,6 @@ function Game:load()
     })
     self.objects.shuffle.on_clicked = function() self:shuffle() end
 
-    local fade_in_sec = 2
-    local fade_out_sec = 1
-
-    --TODO remove these
-    fade_in_sec = 0.1
-    fade_out_sec = 0.1
-
     self.ready_timer = timer(fade_in_sec, function(progress)
         local txt_ready_go = self.objects.txt_ready_go
         txt_ready_go.alpha = progress
@@ -343,7 +351,7 @@ end
 function Game:correct_answer()
     local obj_question = self.objects.bg_question
 
-    self.wait_timer = timer(1.5,
+    self.wait_timer = timer(info_show_dur,
         function(progress)
             obj_question.text_alpha = 1 - progress
             for i = 1, self.n_choices do
@@ -355,10 +363,7 @@ function Game:correct_answer()
             obj_question.text_alpha = 1
             for i = 1, self.n_choices do self.objects["choice_" .. i] = nil end
 
-            --TODO replace with 5
-            local info_duration = 0.5
-
-            self.wait_timer = timer(info_duration, nil, function()
+            self.wait_timer = timer(info_dur, nil, function()
                 self.objects.shuffle.is_hoverable = true
                 self.objects.shuffle.is_clickable = true
                 self.objects.settings.is_clickable = true
@@ -382,7 +387,7 @@ function Game:wrong_answer()
     for _, bubble in ipairs(self.bubbles) do bubble.target_y = bubble.y + self.increase end
     self.border_y = self.border_y + self.increase
 
-    self.border_move_timer = timer(1.5,
+    self.border_move_timer = timer(wrong_dur,
         function(progress)
             for _, border in ipairs(self.border) do
                 border.y = mathx.lerp(border.y, border.target_y, progress)
@@ -478,7 +483,7 @@ function Game:after_shoot()
             for i = #self.bubbles, 1, -1 do
                 local bubble = self.bubbles[i]
                 if bubble == k then
-                    local t = timer(1,
+                    local t = timer(pop_dur,
                         function(progress)
                             bubble.alpha = 1 - progress
                             ammo.alpha = 1 - progress
