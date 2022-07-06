@@ -19,6 +19,18 @@ local n_choices = {
     hard = 4,
 }
 
+local game_timers = {
+    easy = 5 * 60,
+    medium = 4 * 60,
+    hard = 3 * 60,
+}
+
+local scoring = {
+    easy = 3,
+    medium = 4,
+    hard = 5,
+}
+
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
 
 local fade_in_sec = 2
@@ -42,7 +54,7 @@ function Game:new(difficulty, level, hearts)
     self.level = level
     self.hearts = hearts or 3
     self.max_hearts = 3
-    self.time = 0
+    self.is_game_over = false
     self.start = false
     self.is_question = false
     self.is_targeting = false
@@ -50,6 +62,7 @@ function Game:new(difficulty, level, hearts)
     self.target_path = {}
     self.rows = rows[difficulty][level]
     self.rotation = 0
+    self.game_timer = game_timers[difficulty]
     assert(self.rows ~= nil and self.rows > 0)
 
     local diff = string.upper(difficulty:sub(1, 1)) .. difficulty:sub(2)
@@ -96,7 +109,7 @@ function Game:load()
         sx = ui_scale, sy = ui_scale,
         ox = 0, oy = 0,
         is_hoverable = false, is_clickable = false,
-        text = "Score: ", text_color = {1, 1, 1},
+        text = "Score: 0", text_color = {1, 1, 1},
         font = Resources.game_font,
         tx = gap * 3,
         ty = gap + score_holder_height * 0.5 * ui_scale,
@@ -142,7 +155,7 @@ function Game:load()
         sx = ui_scale, sy = ui_scale,
         ox = 0, oy = 0,
         is_hoverable = false, is_clickable = false,
-        text = string.format("Time: %.2f", self.time),
+        text = string.format("Time: %.2f", self.game_timer),
         text_color = {1, 1, 1},
         font = Resources.game_font,
         tx = thx + gap * 2,
@@ -377,15 +390,16 @@ function Game:correct_answer()
         end)
 end
 
-function Game:wrong_answer()
+function Game:wrong_answer(increase)
+    increase = increase or self.increase
     if #self.questions == 0 then
         self.questions = tablex.copy(require("questions." .. self.difficulty))
     end
     self.border_move = true
 
-    for _, border in ipairs(self.border) do border.target_y = border.y + self.increase end
-    for _, bubble in ipairs(self.bubbles) do bubble.target_y = bubble.y + self.increase end
-    self.border_y = self.border_y + self.increase
+    for _, border in ipairs(self.border) do border.target_y = border.y + increase end
+    for _, bubble in ipairs(self.bubbles) do bubble.target_y = bubble.y + increase end
+    self.border_y = self.border_y + increase
 
     self.border_move_timer = timer(wrong_dur,
         function(progress)
@@ -398,8 +412,7 @@ function Game:wrong_answer()
         end,
         function()
             self:show_question()
-        end
-    )
+        end)
 end
 
 function Game:create_bubbles(border_height, border_scale)
@@ -437,14 +450,14 @@ function Game:create_bubbles(border_height, border_scale)
     end
 
     -- compress initial bubbles
-    -- for _, bubble in ipairs(self.bubbles) do
-    --     bubble.vy = -8
-    --     bubble.y = bubble.y + bubble.vy * love.timer.getDelta()
-    --     for _, border in ipairs(self.border) do
-    --         bubble:check_collision(border, true)
-    --     end
-    --     bubble.vy = 0
-    -- end
+    for _, bubble in ipairs(self.bubbles) do
+        bubble.vy = -8
+        bubble.y = bubble.y + bubble.vy * love.timer.getDelta()
+        for _, border in ipairs(self.border) do
+            bubble:check_collision(border, true)
+        end
+        bubble.vy = 0
+    end
 end
 
 function Game:shuffle()
@@ -595,7 +608,25 @@ function Game:shoot(mx, my)
     ammo.oy = ammo.main_oy
 end
 
+function Game:game_over()
+    self.is_game_over = true
+    self.objects.bg_question = nil
+    for i = 1, self.n_choices do
+        self.objects["choice_" .. i] = nil
+    end
+end
+
 function Game:update(dt)
+    if self.is_game_over then return end
+
+    self.game_timer = self.game_timer - dt
+    if self.game_timer <= 0 then
+        self:game_over()
+    end
+
+    local th = self.objects.time_holder
+    th.text = string.format("Time: %d", self.game_timer)
+
     if not self.start then
         self.ready_timer:update(dt)
         if self.ready_fade_timer then
@@ -676,6 +707,33 @@ function Game:update(dt)
         local btn = self.objects[id]
         if btn then
             btn:update(dt)
+        end
+    end
+
+    --get the bubble that is in the lowest pos
+    local lowest_bubble, lowest_y = nil, 0
+    for _, bubble in ipairs(self.bubbles) do
+        if bubble.y > lowest_y then
+            lowest_bubble = bubble
+            lowest_y = bubble.y
+        end
+    end
+
+    if lowest_bubble then
+        local shooter = self.objects.shooter
+        local threshold = shooter.y - shooter.oy * shooter.sy + 32
+        if lowest_y + lowest_bubble.rad * lowest_bubble.sy >= threshold then
+            local obj_heart = self.objects["heart_" .. self.hearts]
+            if obj_heart then
+                obj_heart.image = self.images_common.heart_empty
+            end
+            self.hearts = self.hearts - 1
+
+            if self.hearts > 0 then
+                self:wrong_answer(-self.increase * 3)
+            else
+                self:game_over()
+            end
         end
     end
 end
