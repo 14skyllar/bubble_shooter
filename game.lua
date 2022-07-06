@@ -63,6 +63,7 @@ function Game:new(difficulty, level, hearts)
 
     self.remaining_shots = 0
     self.increase = 32
+    self.pop_timers = {}
 end
 
 function Game:load()
@@ -272,7 +273,7 @@ function Game:show_question()
         is_printf = true,
         font = font,
         text = self.current_question.question,
-        text_color = {0, 0, 0},
+        text_color = {0, 0, 0}, text_alpha = 1,
         tx = half_window_width - bg_question_width * sx * 0.5 + margin,
         ty = ty,
         limit = limit,
@@ -340,27 +341,34 @@ function Game:check_answer(choice_obj)
 end
 
 function Game:correct_answer()
+    local obj_question = self.objects.bg_question
+
     self.wait_timer = timer(1.5,
         function(progress)
-            self.objects.bg_question.alpha = 1 - progress
+            obj_question.text_alpha = 1 - progress
             for i = 1, self.n_choices do
                 self.objects["choice_" .. i].alpha = 1 - progress
             end
         end,
         function()
-            self.objects.shuffle.is_hoverable = true
-            self.objects.shuffle.is_clickable = true
-            self.objects.settings.is_clickable = true
-            self.objects.settings.is_hoverable = true
-            self.objects.bg_question = nil
-            for i = 1, self.n_choices do
-                self.objects["choice_" .. i] = nil
-            end
-            self.remaining_shots = 3
-            self.start = true
-            self.is_question = false
-            self:reload()
-            self.wait_timer = nil
+            obj_question.text = self.current_question.info
+            obj_question.text_alpha = 1
+            for i = 1, self.n_choices do self.objects["choice_" .. i] = nil end
+
+            --TODO replace with 5
+            local info_duration = 0.5
+
+            self.wait_timer = timer(info_duration, nil, function()
+                self.objects.shuffle.is_hoverable = true
+                self.objects.shuffle.is_clickable = true
+                self.objects.settings.is_clickable = true
+                self.objects.settings.is_hoverable = true
+                self.objects.bg_question = nil
+                self.remaining_shots = 3
+                self.start = true
+                self.is_question = false
+                self:reload()
+            end)
         end)
 end
 
@@ -446,13 +454,62 @@ function Game:shuffle()
 end
 
 function Game:after_shoot()
-    if self.objects.ammo then
-        table.insert(self.bubbles, self.objects.ammo)
+    local ammo = self.objects.ammo
+
+    local stack = {ammo}
+    local found = {}
+    found[ammo] = true
+
+    while #stack > 0 do
+        local current = table.remove(stack, 1)
+        local within_radius = current:get_within_radius(self.bubbles)
+        for _, bubble in ipairs(within_radius) do
+            if not found[bubble] then
+                found[bubble] = true
+                table.insert(stack, bubble)
+            end
+        end
     end
 
+    local matches = #tablex.keys(found)
+    if matches >= 3 then
+        self.has_match = true
+        for k in pairs(found) do
+            for i = #self.bubbles, 1, -1 do
+                local bubble = self.bubbles[i]
+                if bubble == k then
+                    local t = timer(1,
+                        function(progress)
+                            bubble.alpha = 1 - progress
+                            ammo.alpha = 1 - progress
+                        end,
+                        function()
+                            bubble.is_dead = true
+                            ammo.is_dead = true
+                        end)
+
+                    table.insert(self.pop_timers, t)
+                end
+            end
+        end
+    end
+
+    if ammo then
+        table.insert(self.bubbles, ammo)
+    end
+
+    self.objects.ammo = nil
+
+    if matches >= 3 then
+        return
+    end
+
+    self:resolve_post_shoot()
+end
+
+function Game:resolve_post_shoot()
     if self.remaining_shots == 0 and not self.is_question then
         self.can_shoot = false
-        self.objects.ammo = nil
         self.wait_timer = timer(0.5, nil, function() self:show_question() end)
     else
         self:reload()
@@ -461,8 +518,11 @@ function Game:after_shoot()
 end
 
 function Game:reload()
-    local key = tablex.pick_random(self.bubbles_key)
-    local image = self.images_bubbles[key]
+    local present_bubbles = {}
+    for _, bubble in ipairs(self.bubbles) do
+        table.insert(present_bubbles, bubble.image)
+    end
+    local image = tablex.pick_random(present_bubbles)
     local width, height = image:getDimensions()
     local bubble_scale = 2
     local shooter = self.objects.shooter
@@ -538,7 +598,9 @@ function Game:update(dt)
         end
     end
 
-    if self.wait_timer then self.wait_timer:update(dt) end
+    if self.wait_timer and not self.has_match then
+        self.wait_timer:update(dt)
+    end
 
     if self.start then
         local shooter = self.objects.shooter
@@ -579,8 +641,27 @@ function Game:update(dt)
                     end
                 end
             end
+        end
+    end
 
-            if ammo.is_dead then self:reload() end
+    for i = #self.pop_timers, 1, -1 do
+        local timer = self.pop_timers[i]
+        if not timer:expired() then
+            timer:update(dt)
+        else
+            table.remove(self.pop_timers, i)
+
+            if #self.pop_timers == 0 then
+                self.has_match = false
+                self:resolve_post_shoot()
+            end
+        end
+    end
+
+    for i = #self.bubbles, 1, -1 do
+        local bubble = self.bubbles[i]
+        if bubble.is_dead then
+            table.remove(self.bubbles, i)
         end
     end
 
@@ -650,7 +731,7 @@ function Game:mousepressed(mx, my, mb)
         end
     end
 
-    if self.start and self.can_shoot then
+    if self.start and self.can_shoot and not self.has_match then
         self.is_targeting = true
         self:update_target_path(mx , my)
     end
@@ -665,7 +746,7 @@ function Game:mousereleased(mx, my, mb)
         end
     end
 
-    if self.start and self.is_targeting then
+    if self.start and self.is_targeting and not self.has_match then
         self.is_targeting = false
         if self.can_shoot and self.remaining_shots > 0 then
             self.can_shoot = false

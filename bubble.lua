@@ -5,6 +5,7 @@ local Bubble = class({
 })
 
 function Bubble:new(opts)
+    local width = opts.image:getWidth()
     self.image = opts.image
     self.x, self.y = opts.x, opts.y
     self.r = opts.r or 0
@@ -13,10 +14,11 @@ function Bubble:new(opts)
     self.ox = opts.ox or 0
     self.oy = opts.oy or 0
     self.main_oy = opts.main_oy or self.oy
-    self.rad = self.image:getWidth() * self.sx * 0.25
+    self.rad = width * self.sx * 0.25
     self.alpha = opts.alpha or 1
     self.vx, self.vy = 0, 0
     self.is_hit = false
+    self.within_rad = width * 2 * 1.5
 end
 
 function Bubble:check_collision(other, is_border)
@@ -36,6 +38,29 @@ function Bubble:check_collision(other, is_border)
     end
 
     return self.is_hit
+end
+
+function Bubble:check_match(other)
+    if other == self then return false end
+    return self.image == other.image
+end
+
+function Bubble:get_within_radius(bubbles)
+    local within = {}
+    for _, other in ipairs(bubbles) do
+        if self ~= other then
+            local is_same = self:check_match(other)
+            if is_same then
+                local this_pos = vec2(self.x, self.y)
+                local other_pos = vec2(other.x, other.y)
+                local distance = this_pos:distance(other_pos)
+                if distance <= self.within_rad then
+                    table.insert(within, other)
+                end
+            end
+        end
+    end
+    return within
 end
 
 function Bubble:update(dt)
@@ -59,6 +84,7 @@ function Bubble:draw()
         love.graphics.setColor(1, 0, 0, 1)
         love.graphics.circle("line", self.x, self.y, self.rad * self.sx)
         love.graphics.circle("fill", self.x, self.y, 2)
+        love.graphics.circle("line", self.x, self.y, self.within_rad)
     end
 end
 

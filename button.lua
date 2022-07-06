@@ -38,6 +38,7 @@ function Button:new(opts)
     end
 
     self.text_color = opts.text_color or {1, 1, 1}
+    self.text_alpha = opts.text_alpha
     self.text = opts.text
     self.font = opts.font
     self.tx = opts.tx or self.x
@@ -91,7 +92,7 @@ function Button:draw()
         end
 
         local tr, tg, tb = unpack(self.text_color)
-        love.graphics.setColor(tr, tg, tb, self.alpha)
+        love.graphics.setColor(tr, tg, tb, self.text_alpha or self.alpha)
 
         if not self.is_printf then
             love.graphics.print(self.text, self.tx, self.ty, 0, tsx, tsy, self.tox, self.toy)
