@@ -12,6 +12,13 @@ local rows = {
     medium = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17},
     hard = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22},
 }
+
+local n_choices = {
+    easy = 4,
+    medium = 2,
+    hard = 4,
+}
+
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
 
 function Game:new(difficulty, level, hearts)
@@ -42,9 +49,15 @@ function Game:new(difficulty, level, hearts)
         "score_holder", "life_holder", "time_holder", "label", "settings",
         "base", "shooter", "ammo", "shuffle",
         "txt_ready_go",
+        "bg_question",
     }
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
+
+    self.current_question = 1
+    self.questions = require("questions." .. difficulty)
+    self.n_choices = n_choices[difficulty]
+    for i = 1, self.n_choices do table.insert(self.objects_order, "choice_" .. i) end
 end
 
 function Game:load()
@@ -219,17 +232,77 @@ function Game:load()
             local txt_ready_go = self.objects.txt_ready_go
             txt_ready_go.alpha = 1 - progress
         end, function()
-            self.start = true
-            self.objects.shuffle.is_hoverable = true
-            self.objects.shuffle.is_clickable = true
-            self.objects.settings.is_clickable = true
-            self.objects.settings.is_hoverable = true
+            -- self.start = true
+            -- self.objects.shuffle.is_hoverable = true
+            -- self.objects.shuffle.is_clickable = true
+            -- self.objects.settings.is_clickable = true
+            -- self.objects.settings.is_hoverable = true
             self.objects.txt_ready_go.alpha = 0
-            self:reload()
+            self:show_question()
+            -- self:reload()
         end)
     end)
 
     self:create_bubbles(border_height, border_scale)
+end
+
+function Game:show_question()
+    local padding = 64
+    local window_width, window_height = love.graphics.getDimensions()
+    local half_window_width = window_width * 0.5
+    local half_window_height = window_height * 0.5
+    local bg_question_width, bg_question_height = self.images.bg_question:getDimensions()
+    local sx = (window_width - padding)/bg_question_width
+    local sy = (window_height - padding)/bg_question_height
+    local font = Resources.font
+    local margin = 16
+    local question = self.questions[self.current_question]
+
+    self.objects.bg_question = Button({
+        image = self.images.bg_question,
+        x = half_window_width, y = half_window_height,
+        sx = sx, sy = sy,
+        ox = bg_question_width * 0.5, oy = bg_question_height * 0.5,
+        is_hoverable = false, is_clickable = false,
+        is_printf = true,
+        font = font,
+        text = question.question,
+        text_color = {0, 0, 0},
+        tx = half_window_width - bg_question_width * sx * 0.5 + margin,
+        ty = half_window_height - bg_question_height * sy * 0.5 + margin,
+        limit = bg_question_width * sx - margin * 2,
+    })
+
+    local choice_width, choice_height = self.images_common.box_choice:getDimensions()
+    local choice_sx = (window_width - padding * 1.5)/choice_width
+    local choice_sy = ((window_height * 0.5 - padding)/choice_height)/self.n_choices
+
+    local ascii = 97
+
+    for i = 1, self.n_choices do
+        local key = "choice_" .. i
+        local letter = string.char(ascii)
+        local str_question = question[letter]
+        local txt_width = font:getWidth(str_question)
+        local txt_height = font:getHeight()
+
+        self.objects[key] = Button({
+            image = self.images_common.box_choice,
+            x = half_window_width,
+            y = half_window_height + (choice_height + margin) * choice_sy * (i - 1),
+            sx = choice_sx, sy = choice_sy,
+            ox = choice_width * 0.5, oy = choice_height * 0.5,
+            font = font,
+            text = str_question,
+            tox = txt_width * 0.5,
+            toy = txt_height * 0.5,
+        })
+
+        ascii = ascii + 1
+        if ascii > 100 then
+            ascii = 97
+        end
+    end
 end
 
 function Game:create_bubbles(border_height, border_scale)

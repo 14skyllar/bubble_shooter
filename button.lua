@@ -44,6 +44,10 @@ function Button:new(opts)
     self.ty = opts.ty or self.y
     self.tox = opts.tox or 0
     self.toy = opts.toy or 0
+
+    self.is_printf = opts.is_printf
+    self.limit = opts.limit
+    self.align = opts.align or "left"
 end
 
 function Button:update_y(y)
@@ -86,7 +90,12 @@ function Button:draw()
 
         local tr, tg, tb = unpack(self.text_color)
         love.graphics.setColor(tr, tg, tb, self.alpha)
-        love.graphics.print(self.text, self.tx, self.ty, 0, tsx, tsy, self.tox, self.toy)
+
+        if not self.is_printf then
+            love.graphics.print(self.text, self.tx, self.ty, 0, tsx, tsy, self.tox, self.toy)
+        else
+            love.graphics.printf(self.text, self.tx, self.ty, self.limit, self.align)
+        end
 
         if self.font then
             love.graphics.setFont(tmp_font)
