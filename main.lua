@@ -64,6 +64,7 @@ end
 
 function love.keypressed(key)
     Dev:keypressed(key)
+    StateManager:keypressed(key)
 end
 
 function love.quit()

@@ -46,10 +46,11 @@ Resources.images = {
         "background", "heart_empty", "bubble",
         "score_holder", "life_holder", "time_holder",
         "base", "text_ready_go", "shuffle", "box_choice",
+        "bg_box", "text_lose", "text_win",
     },
 
     Easy = {
-        "heart", "label", "settings", "shooter", "bg_question",
+        "heart", "label", "settings", "shooter", "bg_question", "bg_win_lose",
     },
     BubblesEasy = {}
 }
@@ -66,8 +67,10 @@ Resources.sources = {
 
 function Resources:init()
     local path = "assets/"
-    self.font = love.graphics.newFont(path .. self.fonts.roboto_bold, 20)
-    self.game_font = love.graphics.newFont(path .. self.fonts.roboto_bold, 16)
+    local roboto_bold = self.fonts.roboto_bold
+    self.font = love.graphics.newFont(path .. roboto_bold, 20)
+    self.game_font = love.graphics.newFont(path .. roboto_bold, 16)
+    self.wl_score_font = love.graphics.newFont(path .. roboto_bold, 38)
 
     local bubbles_easy = love.filesystem.getDirectoryItems(path .. "images/BubblesEasy")
     for i, filename in ipairs(bubbles_easy) do

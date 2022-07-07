@@ -79,7 +79,7 @@ function Game:new(difficulty, level, hearts)
         "score_holder", "life_holder", "time_holder", "label", "settings",
         "base", "shooter", "ammo", "shuffle",
         "txt_ready_go",
-        "bg_question",
+        "bg_question", "bg_box", "bg_win_lose", "text_lose", "text_win",
     }
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
@@ -397,18 +397,18 @@ function Game:wrong_answer(increase)
     end
     self.border_move = true
 
+    self.objects.bg_question.alpha = 0.5
+    for i = 1, self.n_choices do
+        self.objects["choice_" .. i].alpha = 0.5
+    end
+
     for _, border in ipairs(self.border) do border.target_y = border.y + increase end
     for _, bubble in ipairs(self.bubbles) do bubble.target_y = bubble.y + increase end
     self.border_y = self.border_y + increase
-
     self.border_move_timer = timer(wrong_dur,
         function(progress)
-            for _, border in ipairs(self.border) do
-                border.y = mathx.lerp(border.y, border.target_y, progress)
-            end
-            for _, bubble in ipairs(self.bubbles) do
-                bubble.y = mathx.lerp(bubble.y, bubble.target_y, progress)
-            end
+            for _, border in ipairs(self.border) do border.y = mathx.lerp(border.y, border.target_y, progress) end
+            for _, bubble in ipairs(self.bubbles) do bubble.y = mathx.lerp(bubble.y, bubble.target_y, progress) end
         end,
         function()
             self:show_question()
@@ -608,11 +608,73 @@ function Game:shoot(mx, my)
     ammo.oy = ammo.main_oy
 end
 
-function Game:game_over()
+function Game:game_over(has_won)
     self.is_game_over = true
-    self.objects.bg_question = nil
-    for i = 1, self.n_choices do
-        self.objects["choice_" .. i] = nil
+    for i = #self.border, 1, -1 do
+        table.remove(self.border, i)
+    end
+    for i = #self.bubbles, 1, -1 do
+        table.remove(self.bubbles, i)
+    end
+    for k in pairs(self.objects) do
+        if not (k == "label" or k == "settings") then
+            self.objects[k] = nil
+        end
+    end
+
+    local window_width, window_height = love.graphics.getDimensions()
+    local half_window_width = window_width * 0.5
+    local half_window_height = window_height * 0.5
+
+    local bg_width, bg_height = self.images_common.bg_box:getDimensions()
+    local bg_sx = (window_width - 64)/bg_width
+    local bg_sy = (half_window_height)/bg_height
+
+    self.objects.bg_box = Button({
+        image = self.images_common.bg_box,
+        x = half_window_width, y = half_window_height,
+        sx = bg_sx, sy = bg_sy,
+        ox = bg_width * 0.5, oy = bg_height * 0.5,
+        is_hoverable = false, is_clickable = false
+    })
+
+    local box_width, box_height = self.images.bg_win_lose:getDimensions()
+    self.objects.bg_win_lose = Button({
+        image = self.images.bg_win_lose,
+        x = half_window_width, y = half_window_height + 48,
+        sx = 1, sy = 1,
+        ox = box_width * 0.5, oy = box_height * 0.5,
+        is_hoverable = false, is_clickable = false,
+    })
+    local bg_win_lose = self.objects.bg_win_lose
+    local font = Resources.wl_score_font
+
+    if has_won then
+        local score = scoring[self.difficulty]
+        local win_width, win_height = self.images_common.text_win:getDimensions()
+        local win_sx = (box_width - 32)/win_width
+        local win_sy = (box_height * 0.35)/win_height
+        local text = "SCORE: " .. score
+        local y = bg_win_lose.y - bg_win_lose.half_size.y + win_height * win_sy
+
+        self.objects.text_win = Button({
+            image = self.images_common.text_win,
+            x = bg_win_lose.x,
+            y = y,
+            sx = win_sx, sy = win_sy,
+            ox = win_width * 0.5,
+            oy = win_height * 0.5,
+            is_clickable = false, is_hoverable = false,
+            text_color = {1, 1, 1},
+            text = text,
+            font = font,
+            tx = bg_win_lose.x,
+            ty = y + font:getHeight(),
+            tox = font:getWidth(text) * 0.5,
+            toy = font:getHeight() * 0.5,
+        })
+    else
+        local lose_width, lose_height = self.images_common.text_lose:getDimensions()
     end
 end
 
@@ -622,6 +684,10 @@ function Game:update(dt)
     self.game_timer = self.game_timer - dt
     if self.game_timer <= 0 then
         self:game_over()
+    end
+
+    if #self.bubbles == 0 then
+        self:game_over(true)
     end
 
     local th = self.objects.time_holder
@@ -832,6 +898,9 @@ function Game:mousemoved(mx, my, dmx, dmy, istouch)
 end
 
 function Game:keypressed(key)
+    if key == "w" then
+        self:game_over(true)
+    end
 end
 
 return Game
