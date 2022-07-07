@@ -25,6 +25,7 @@ function Bubble:new(opts)
     self.vx, self.vy = 0, 0
     self.is_hit = false
     self.within_rad = width * 2 * 1.5
+    self.color_name = opts.color_name
 end
 
 function Bubble:check_collision(other, is_border)
@@ -48,7 +49,7 @@ end
 
 function Bubble:check_match(other)
     if other == self then return false end
-    return self.image == other.image
+    return self.color_name == other.color_name
 end
 
 function Bubble:get_within_radius(bubbles)

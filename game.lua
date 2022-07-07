@@ -1,5 +1,6 @@
 local Bubble = require("bubble")
 local Button = require("button")
+local Colors = require("colors")
 local Resources = require("resources")
 local StateManager = require("state_manager")
 local UserData = require("user_data")
@@ -401,28 +402,35 @@ function Game:correct_answer()
         end)
 end
 
-function Game:wrong_answer(increase)
-    increase = increase or self.increase
+function Game:wrong_answer(value, push_only)
+    value = value or self.increase
     if #self.questions == 0 then
         self.questions = tablex.copy(require("questions." .. self.difficulty))
     end
     self.border_move = true
 
-    self.objects.bg_question.alpha = 0.5
+    if self.objects.bg_question then
+        self.objects.bg_question.alpha = 0.5
+    end
     for i = 1, self.n_choices do
-        self.objects["choice_" .. i].alpha = 0.5
+        local obj = self.objects["choice_" .. i]
+        if obj then
+            obj.alpha = 0.5
+        end
     end
 
-    for _, border in ipairs(self.border) do border.target_y = border.y + increase end
-    for _, bubble in ipairs(self.bubbles) do bubble.target_y = bubble.y + increase end
-    self.border_y = self.border_y + increase
+    for _, border in ipairs(self.border) do border.target_y = border.y + value end
+    for _, bubble in ipairs(self.bubbles) do bubble.target_y = bubble.y + value end
+    self.border_y = self.border_y + value
     self.border_move_timer = timer(wrong_dur,
         function(progress)
             for _, border in ipairs(self.border) do border.y = mathx.lerp(border.y, border.target_y, progress) end
             for _, bubble in ipairs(self.bubbles) do bubble.y = mathx.lerp(bubble.y, bubble.target_y, progress) end
         end,
         function()
-            self:show_question()
+            if not push_only then
+                self:show_question()
+            end
         end)
 end
 
@@ -435,6 +443,7 @@ function Game:create_bubbles(border_height, border_scale)
             local cols = self.rows - i
             for j = 0, cols - 1 do
                 local key = tablex.pick_random(self.bubbles_key)
+                local color_name = Colors.get_color(key)
                 local image = self.images_bubbles[key]
                 local width, height = image:getDimensions()
 
@@ -449,6 +458,7 @@ function Game:create_bubbles(border_height, border_scale)
                     x = x, y = y,
                     sx = bubble_scale, sy = bubble_scale,
                     ox = width * 0.5, oy = height * 0.5,
+                    color_name = color_name,
                 })
 
                 table.insert(self.bubbles, bubble)
@@ -469,16 +479,37 @@ function Game:create_bubbles(border_height, border_scale)
         end
         bubble.vy = 0
     end
+
+    --check for total y the bubbles will reach after compressing
+    local lowest_y = 0
+    for _, bubble in ipairs(self.bubbles) do
+        local y = bubble.y + bubble.rad * bubble.sy
+        if y > lowest_y then
+            lowest_y = y
+        end
+    end
+
+    local window_height = love.graphics.getHeight()
+    local threshold = window_height * 0.55
+
+    if lowest_y > threshold then
+        self:wrong_answer(-self.increase * 3, true)
+    end
 end
 
 function Game:shuffle()
     local temp_images = {}
     for _, bubble in ipairs(self.bubbles) do
-        table.insert(temp_images, bubble.image)
+        local data = {
+            image = bubble.image,
+            color_name = bubble.color_name,
+        }
+        table.insert(temp_images, data)
     end
     for _, bubble in ipairs(self.bubbles) do
-        local new_image = tablex.take_random(temp_images)
-        bubble.image = new_image
+        local data = tablex.take_random(temp_images)
+        bubble.image = data.image
+        bubble.color_name = data.color_name
     end
 end
 
@@ -554,9 +585,14 @@ end
 function Game:reload()
     local present_bubbles = {}
     for _, bubble in ipairs(self.bubbles) do
-        table.insert(present_bubbles, bubble.image)
+        local data = {
+            image = bubble.image,
+            color_name = bubble.color_name,
+        }
+        table.insert(present_bubbles, data)
     end
-    local image = tablex.pick_random(present_bubbles)
+    local new_data = tablex.pick_random(present_bubbles)
+    local image = new_data.image
     local width, height = image:getDimensions()
     local bubble_scale = 2
     local shooter = self.objects.shooter
@@ -567,6 +603,7 @@ function Game:reload()
         sx = bubble_scale, sy = bubble_scale,
         ox = width * 0.5, oy = height * 0.75,
         main_oy = height * 0.5,
+        color_name = new_data.color_name,
     })
 end
 
