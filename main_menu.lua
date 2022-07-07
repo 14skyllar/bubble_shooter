@@ -9,7 +9,7 @@ local MainMenu = class({
     name = "MainMenu"
 })
 
-function MainMenu:new()
+function MainMenu:new(start_screen)
     local id = self:type()
     self.images = Utils.load_images(id)
     self.sources = Utils.load_sources(id)
@@ -29,6 +29,7 @@ function MainMenu:new()
     end
 
     self.difficulty = nil
+    self.start_screen = start_screen
 end
 
 function MainMenu:load()
@@ -410,6 +411,10 @@ function MainMenu:load()
     self.objects.reset_levels.on_clicked = function()
         UserData:reset_levels()
         UserData:save()
+    end
+
+    if self.start_screen then
+        self:show_levels(self.start_screen)
     end
 end
 

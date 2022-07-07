@@ -1,6 +1,8 @@
 local Bubble = require("bubble")
 local Button = require("button")
 local Resources = require("resources")
+local StateManager = require("state_manager")
+local UserData = require("user_data")
 local Utils = require("utils")
 
 local Game = class({
@@ -39,6 +41,7 @@ local info_show_dur = 1.5
 local info_dur = 0.5
 local wrong_dur = 1.5
 local pop_dur = 1
+local proceed_delay = 1.5
 
 --TODO remove these
 fade_in_sec = 0.1
@@ -59,6 +62,7 @@ function Game:new(difficulty, level, hearts)
     self.is_question = false
     self.is_targeting = false
     self.can_shoot = false
+    self.can_proceed = false
     self.target_path = {}
     self.rows = rows[difficulty][level]
     self.rotation = 0
@@ -248,7 +252,8 @@ function Game:load()
         y = self.objects.base.y - shuffle_height,
         sx = shuffle_scale, sy = shuffle_scale,
         ox = shuffle_width * 0.5, oy = shuffle_height * 0.5,
-        is_clickable = false, is_hoverable = false
+        is_clickable = false, is_hoverable = false,
+        on_click_sound = self.sources.snd_bubble_swap,
     })
     self.objects.shuffle.on_clicked = function() self:shuffle() end
 
@@ -267,6 +272,9 @@ function Game:load()
     end)
 
     self:create_bubbles(border_height, border_scale)
+
+    self.sources.snd_ready_go:play()
+    self.sources.snd_ready_go:setLooping(false)
 end
 
 function Game:show_question()
@@ -330,6 +338,7 @@ function Game:show_question()
             tox = txt_width * 0.5,
             toy = txt_height * 0.5,
             value = letter,
+            on_click_sound = self.sources.snd_buttons,
         })
         self.objects[key].on_clicked = function()
             self:check_answer(self.objects[key])
@@ -493,6 +502,9 @@ function Game:after_shoot()
 
     local matches = #tablex.keys(found)
     if matches >= 3 then
+        self.sources.snd_bubble_pop:play()
+        self.sources.snd_bubble_pop:setLooping(false)
+
         self.has_match = true
         for k in pairs(found) do
             for i = #self.bubbles, 1, -1 do
@@ -535,6 +547,8 @@ function Game:resolve_post_shoot()
         self:reload()
         self.can_shoot = true
     end
+    self.sources.snd_drop_bubbles:play()
+    self.sources.snd_drop_bubbles:setLooping(false)
 end
 
 function Game:reload()
@@ -608,6 +622,9 @@ function Game:shoot(mx, my)
     ammo.vx = diff.x
     ammo.vy = diff.y
     ammo.oy = ammo.main_oy
+
+    self.sources.snd_drop_bubbles:play()
+    self.sources.snd_drop_bubbles:setLooping(false)
 end
 
 function Game:game_over(has_won)
@@ -651,41 +668,49 @@ function Game:game_over(has_won)
     })
     local bg_win_lose = self.objects.bg_win_lose
     local font = Resources.wl_score_font
-    local star_image
+    local text_key, score, star_image, text_image
 
     if has_won then
+        text_key = "text_win"
         star_image = self.images_common.whole_star
-        local score = scoring[self.difficulty]
-        local win_width, win_height = self.images_common.text_win:getDimensions()
-        local win_sx = (box_width - 32)/win_width
-        local win_sy = (box_height * 0.35)/win_height
-        local text = "SCORE: " .. score
-        local y = bg_win_lose.y - bg_win_lose.half_size.y + win_height * win_sy
+        score = scoring[self.difficulty]
+        text_image = self.images_common.text_win
 
-        self.objects.text_win = Button({
-            image = self.images_common.text_win,
-            x = bg_win_lose.x,
-            y = y,
-            sx = win_sx, sy = win_sy,
-            ox = win_width * 0.5,
-            oy = win_height * 0.5,
-            is_clickable = false, is_hoverable = false,
-            text_color = {1, 1, 1},
-            text = text,
-            font = font,
-            tx = bg_win_lose.x,
-            ty = y + font:getHeight(),
-            tox = font:getWidth(text) * 0.5,
-            toy = font:getHeight() * 0.25,
-        })
+        self.sources.bgm_level_cleared:play()
+        self.sources.bgm_level_cleared:setLooping(false)
     else
+        text_key = "text_lose"
         star_image = self.images_common.empty_star
-        local lose_width, lose_height = self.images_common.text_lose:getDimensions()
+        score = 0
+        text_image = self.images_common.text_lose
     end
 
+    local text_width, text_height = text_image:getDimensions()
+    local text_sx = (box_width - 32)/text_width
+    local text_sy = (box_height * 0.35)/text_height
+    local text = "SCORE: " .. score
+    local y = bg_win_lose.y - bg_win_lose.half_size.y + text_height * text_sy
+
+    self.objects[text_key] = Button({
+        image = text_image,
+        x = bg_win_lose.x,
+        y = y,
+        sx = text_sx, sy = text_sy,
+        ox = text_width * 0.5,
+        oy = text_height * 0.5,
+        is_clickable = false, is_hoverable = false,
+        text_color = {1, 1, 1},
+        text = text,
+        font = font,
+        tx = bg_win_lose.x,
+        ty = y + font:getHeight(),
+        tox = font:getWidth(text) * 0.5,
+        toy = font:getHeight() * 0.25,
+    })
+
     local star_width, star_height = star_image:getDimensions()
-    local star_sx = has_won and 0.5 or 0.75
-    local star_sy = has_won and 0.5 or 0.75
+    local star_sx = has_won and 0.5 or 0.6
+    local star_sy = has_won and 0.5 or 0.6
     local gap = 8
     local bx = half_window_width - ((star_width * star_sx * 0.5) * 1.5) - (gap * 1.5)
     local by = bg_box.y - bg_height * bg_sy * 0.5 + star_height * star_sy - gap
@@ -704,7 +729,6 @@ function Game:game_over(has_won)
 
     if has_won then
         local txt_width, txt_height = self.images_common.text_level_cleared:getDimensions()
-
         self.objects.text_level_cleared = Button({
             image = self.images_common.text_level_cleared,
             x = half_window_width,
@@ -714,9 +738,18 @@ function Game:game_over(has_won)
             is_hoverable = false, is_clickable = false,
         })
     end
+
+    self.proceed_timer = timer(proceed_delay, nil, function()
+            self.can_proceed = true
+            self.proceed_timer = nil
+        end)
 end
 
 function Game:update(dt)
+    if self.proceed_timer then
+        self.proceed_timer:update(dt)
+    end
+
     if self.is_game_over then return end
 
     self.game_timer = self.game_timer - dt
@@ -903,6 +936,30 @@ function Game:mousepressed(mx, my, mb)
 end
 
 function Game:mousereleased(mx, my, mb)
+    if self.can_proceed then
+        local data = UserData.data.progress[self.difficulty]
+        if data.current == self.level then
+            data.current = data.current + 1
+
+            if data.current > data.total then
+                data.current = data.total
+
+                -- if we reach the total level, unlock the next difficulty
+                if self.difficulty == "easy" then
+                    UserData.data.progress["medium"].current = 1
+                elseif self.difficulty == "medium" then
+                    UserData.data.progress["hard"].current = 1
+                end
+            end
+
+            UserData:save()
+        end
+
+        local next_state = require("main_menu")
+        StateManager:switch(next_state, self.difficulty)
+        return
+    end
+
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn and btn.was_clicked then
@@ -938,6 +995,8 @@ end
 function Game:keypressed(key)
     if key == "w" then
         self:game_over(true)
+    elseif key == "l" then
+        self:game_over()
     end
 end
 

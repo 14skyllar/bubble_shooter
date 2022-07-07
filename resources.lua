@@ -47,7 +47,7 @@ Resources.images = {
         "score_holder", "life_holder", "time_holder",
         "base", "text_ready_go", "shuffle", "box_choice",
         "bg_box", "text_lose", "text_win", "whole_star",
-        "text_level_cleared",
+        "text_level_cleared", "empty_star",
     },
 
     Easy = {
@@ -63,6 +63,12 @@ Resources.sources = {
     },
 
     Game = {
+        {id = "snd_buttons", kind = "static"},
+        {id = "snd_bubble_swap", kind = "static"},
+        {id = "snd_bubble_pop", kind = "static"},
+        {id = "snd_drop_bubbles", kind = "static"},
+        {id = "snd_ready_go", kind = "stream"},
+        {id = "bgm_level_cleared", kind = "stream"},
     }
 }
 
