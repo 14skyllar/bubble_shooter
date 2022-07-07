@@ -46,7 +46,8 @@ Resources.images = {
         "background", "heart_empty", "bubble",
         "score_holder", "life_holder", "time_holder",
         "base", "text_ready_go", "shuffle", "box_choice",
-        "bg_box", "text_lose", "text_win",
+        "bg_box", "text_lose", "text_win", "whole_star",
+        "text_level_cleared",
     },
 
     Easy = {

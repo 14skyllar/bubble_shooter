@@ -80,6 +80,7 @@ function Game:new(difficulty, level, hearts)
         "base", "shooter", "ammo", "shuffle",
         "txt_ready_go",
         "bg_question", "bg_box", "bg_win_lose", "text_lose", "text_win",
+        "text_level_cleared",
     }
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
@@ -88,6 +89,7 @@ function Game:new(difficulty, level, hearts)
     self.questions = tablex.copy(require("questions." .. difficulty))
     self.n_choices = n_choices[difficulty]
     for i = 1, self.n_choices do table.insert(self.objects_order, "choice_" .. i) end
+    for i = 1, 3 do table.insert(self.objects_order, "star_" .. i) end
 
     self.remaining_shots = 0
     self.increase = 32
@@ -637,6 +639,7 @@ function Game:game_over(has_won)
         ox = bg_width * 0.5, oy = bg_height * 0.5,
         is_hoverable = false, is_clickable = false
     })
+    local bg_box = self.objects.bg_box
 
     local box_width, box_height = self.images.bg_win_lose:getDimensions()
     self.objects.bg_win_lose = Button({
@@ -648,8 +651,10 @@ function Game:game_over(has_won)
     })
     local bg_win_lose = self.objects.bg_win_lose
     local font = Resources.wl_score_font
+    local star_image
 
     if has_won then
+        star_image = self.images_common.whole_star
         local score = scoring[self.difficulty]
         local win_width, win_height = self.images_common.text_win:getDimensions()
         local win_sx = (box_width - 32)/win_width
@@ -671,10 +676,43 @@ function Game:game_over(has_won)
             tx = bg_win_lose.x,
             ty = y + font:getHeight(),
             tox = font:getWidth(text) * 0.5,
-            toy = font:getHeight() * 0.5,
+            toy = font:getHeight() * 0.25,
         })
     else
+        star_image = self.images_common.empty_star
         local lose_width, lose_height = self.images_common.text_lose:getDimensions()
+    end
+
+    local star_width, star_height = star_image:getDimensions()
+    local star_sx = has_won and 0.5 or 0.75
+    local star_sy = has_won and 0.5 or 0.75
+    local gap = 8
+    local bx = half_window_width - ((star_width * star_sx * 0.5) * 1.5) - (gap * 1.5)
+    local by = bg_box.y - bg_height * bg_sy * 0.5 + star_height * star_sy - gap
+
+    for i = 1, 3 do
+        local key = "star_" .. i
+        self.objects[key] = Button({
+            image = star_image,
+            x = bx + (star_width * star_sx * (i - 1)) + gap * (i - 1),
+            y = by,
+            sx = star_sx, sy = star_sy,
+            ox = star_width * 0.5, oy = star_height * 0.5,
+            is_hoverable = false, is_clickable = false,
+        })
+    end
+
+    if has_won then
+        local txt_width, txt_height = self.images_common.text_level_cleared:getDimensions()
+
+        self.objects.text_level_cleared = Button({
+            image = self.images_common.text_level_cleared,
+            x = half_window_width,
+            y = by + star_height * star_sy,
+            sx = 1, sy = 1,
+            ox = txt_width * 0.5, oy = txt_height * 0.5,
+            is_hoverable = false, is_clickable = false,
+        })
     end
 end
 
