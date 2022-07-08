@@ -46,15 +46,23 @@ Resources.images = {
         "background", "heart_empty", "bubble",
         "score_holder", "life_holder", "time_holder",
         "base", "text_ready_go", "shuffle", "box_choice",
-        "bg_box", "text_lose", "text_win", "whole_star",
+        "bg_box", "text_lose", "whole_star",
         "text_level_cleared", "empty_star",
     },
 
-    Easy = {
-        "heart", "label", "settings", "shooter", "bg_question", "bg_win_lose",
-    },
-    BubblesEasy = {}
+    Easy = {"heart", "label", "settings", "shooter", "bg_question", "bg_win_lose", "text_win"},
+    Medium = {},
+    Hard = {},
+
+    BubblesEasy = {},
+    BubblesMedium = {},
+    BubblesHard = {},
 }
+
+for i, str in ipairs(Resources.images.Easy) do
+    Resources.images.Medium[i] = str
+    Resources.images.Hard[i] = str
+end
 
 Resources.sources = {
     MainMenu = {
@@ -82,6 +90,16 @@ function Resources:init()
     local bubbles_easy = love.filesystem.getDirectoryItems(path .. "images/BubblesEasy")
     for i, filename in ipairs(bubbles_easy) do
         self.images.BubblesEasy[i] = filename:sub(0, -5)
+    end
+
+    local bubbles_medium = love.filesystem.getDirectoryItems(path .. "images/BubblesMedium")
+    for i, filename in ipairs(bubbles_medium) do
+        self.images.BubblesMedium[i] = filename:sub(0, -5)
+    end
+
+    local bubbles_hard = love.filesystem.getDirectoryItems(path .. "images/BubblesHard")
+    for i, filename in ipairs(bubbles_hard) do
+        self.images.BubblesHard[i] = filename:sub(0, -5)
     end
 end
 

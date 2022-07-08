@@ -260,7 +260,9 @@ function Game:load()
 
     self.ready_timer = timer(fade_in_sec, function(progress)
         local txt_ready_go = self.objects.txt_ready_go
-        txt_ready_go.alpha = progress
+        if txt_ready_go then
+            txt_ready_go.alpha = progress
+        end
     end, function()
         self.objects.txt_ready_go.alpha = 1
         self.ready_fade_timer = timer(fade_out_sec, function(progress)
@@ -274,8 +276,10 @@ function Game:load()
 
     self:create_bubbles(border_height, border_scale)
 
-    self.sources.snd_ready_go:play()
-    self.sources.snd_ready_go:setLooping(false)
+    if #self.bubbles > 0 then
+        self.sources.snd_ready_go:play()
+        self.sources.snd_ready_go:setLooping(false)
+    end
 end
 
 function Game:show_question()
@@ -711,7 +715,7 @@ function Game:game_over(has_won)
         text_key = "text_win"
         star_image = self.images_common.whole_star
         score = scoring[self.difficulty]
-        text_image = self.images_common.text_win
+        text_image = self.images.text_win
 
         self.sources.bgm_level_cleared:play()
         self.sources.bgm_level_cleared:setLooping(false)
@@ -780,6 +784,36 @@ function Game:game_over(has_won)
             self.can_proceed = true
             self.proceed_timer = nil
         end)
+
+    if has_won then
+        self:update_save_data()
+    end
+end
+
+function Game:update_save_data()
+    local data = UserData.data.progress[self.difficulty]
+    if data.current ~= self.level then return end
+
+    data.current = data.current + 1
+    if data.current > data.total then
+        data.current = data.total
+
+        -- if we reach the total level, unlock the next difficulty
+        if self.difficulty == "easy" then
+            UserData.data.progress["medium"].current = 1
+        elseif self.difficulty == "medium" then
+            UserData.data.progress["hard"].current = 1
+        end
+    end
+
+    local scores_data = UserData.data.scores[self.difficulty]
+    local score = scoring[self.difficulty]
+    scores_data.current = scores_data.current + score
+    if scores_data.current > scores_data.total then
+        scores_data.current = scores_data.total
+    end
+
+    UserData:save()
 end
 
 function Game:update(dt)
@@ -799,7 +833,9 @@ function Game:update(dt)
     end
 
     local th = self.objects.time_holder
-    th.text = string.format("Time: %d", self.game_timer)
+    if th then
+        th.text = string.format("Time: %d", self.game_timer)
+    end
 
     if not self.start then
         self.ready_timer:update(dt)
@@ -974,24 +1010,6 @@ end
 
 function Game:mousereleased(mx, my, mb)
     if self.can_proceed then
-        local data = UserData.data.progress[self.difficulty]
-        if data.current == self.level then
-            data.current = data.current + 1
-
-            if data.current > data.total then
-                data.current = data.total
-
-                -- if we reach the total level, unlock the next difficulty
-                if self.difficulty == "easy" then
-                    UserData.data.progress["medium"].current = 1
-                elseif self.difficulty == "medium" then
-                    UserData.data.progress["hard"].current = 1
-                end
-            end
-
-            UserData:save()
-        end
-
         local next_state = require("main_menu")
         StateManager:switch(next_state, self.difficulty)
         return
@@ -1026,14 +1044,6 @@ function Game:mousemoved(mx, my, dmx, dmy, istouch)
     if not self.is_targeting then return end
     if dmx ~= 0 or dmy ~= 0 then
         self:update_target_path(mx, my)
-    end
-end
-
-function Game:keypressed(key)
-    if key == "w" then
-        self:game_over(true)
-    elseif key == "l" then
-        self:game_over()
     end
 end
 

@@ -24,11 +24,15 @@ function StateManager:draw()
 end
 
 function StateManager:mousepressed(mx, my, mb)
-    self.current:mousepressed(mx, my, mb)
+    if self.current.mousepressed then
+        self.current:mousepressed(mx, my, mb)
+    end
 end
 
 function StateManager:mousereleased(mx, my, mb)
-    self.current:mousereleased(mx, my, mb)
+    if self.current.mousereleased then
+        self.current:mousereleased(mx, my, mb)
+    end
 end
 
 function StateManager:mousemoved(mx, my, dmx, dmy, istouch)
@@ -38,7 +42,9 @@ function StateManager:mousemoved(mx, my, dmx, dmy, istouch)
 end
 
 function StateManager:keypressed(key)
-    self.current:keypressed(key)
+    if self.current.keypressed then
+        self.current:keypressed(key)
+    end
 end
 
 return StateManager
