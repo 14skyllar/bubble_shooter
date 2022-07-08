@@ -492,8 +492,8 @@ function Game:create_bubbles(border_height, border_scale)
         end
 
     elseif self.difficulty == "hard" then
-        local cols = math.floor(window_width/(22 * bubble_scale))
-        for i = 0, self.rows - 1 do
+        local cols = self.rows
+        for i = 0, self.rows do
             for j = 0, cols - 1 do
                 local key = tablex.pick_random(self.bubbles_key)
                 local color_name = Colors.get_color(key)
@@ -514,7 +514,9 @@ function Game:create_bubbles(border_height, border_scale)
 
                 table.insert(self.bubbles, bubble)
             end
-            cols = cols - 1
+
+            local dir = i < math.floor(self.rows * 0.5) and 1 or -1
+            cols = cols + dir
         end
 
     end
@@ -542,7 +544,7 @@ function Game:create_bubbles(border_height, border_scale)
     local threshold = window_height * 0.55
 
     if lowest_y > threshold then
-        self:wrong_answer(-self.increase * 3, true)
+        self:wrong_answer(-self.increase * scoring[self.difficulty], true)
     end
 end
 
@@ -985,7 +987,7 @@ function Game:update(dt)
             self.hearts = self.hearts - 1
 
             if self.hearts > 0 then
-                self:wrong_answer(-self.increase * 3)
+                self:wrong_answer(-self.increase * scoring[self.difficulty])
             else
                 self:game_over()
             end
