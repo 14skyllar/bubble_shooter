@@ -23,7 +23,7 @@ function love.load()
 
     -- to start in main menu, comment the next two lines
     local Game = require("game")
-    StateManager.current = Game("medium", 1)
+    StateManager.current = Game("hard", 1)
 
     -- then uncomment this
     -- StateManager.current = MainMenu()

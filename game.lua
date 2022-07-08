@@ -16,12 +16,6 @@ local rows = {
     hard = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22},
 }
 
-local n_choices = {
-    easy = 4,
-    medium = 2,
-    hard = 4,
-}
-
 local game_timers = {
     easy = 5 * 60,
     medium = 4 * 60,
@@ -92,7 +86,7 @@ function Game:new(difficulty, level, hearts)
 
     self.current_question = nil
     self.questions = tablex.copy(require("questions." .. difficulty))
-    self.n_choices = n_choices[difficulty]
+    self.n_choices = 4
     for i = 1, self.n_choices do table.insert(self.objects_order, "choice_" .. i) end
     for i = 1, 3 do table.insert(self.objects_order, "star_" .. i) end
 
@@ -315,6 +309,9 @@ function Game:show_question()
         limit = limit,
     })
 
+    --TODO
+    self.n_choices = 4
+
     local choice_width, choice_height = self.images_common.box_choice:getDimensions()
     local choice_sx = (window_width - padding * 2)/choice_width
     local choice_sy = ((self.objects.bg_question.half_size.y - padding)/choice_height)/self.n_choices
@@ -439,7 +436,8 @@ function Game:wrong_answer(value, push_only)
 end
 
 function Game:create_bubbles(border_height, border_scale)
-    local half_window_width = love.graphics.getWidth() * 0.5
+    local window_width = love.graphics.getWidth()
+    local half_window_width = window_width * 0.5
     local bubble_scale = 2
 
     if self.difficulty == "easy" then
@@ -450,12 +448,10 @@ function Game:create_bubbles(border_height, border_scale)
                 local color_name = Colors.get_color(key)
                 local image = self.images_bubbles[key]
                 local width, height = image:getDimensions()
-
-                local x = half_window_width - (cols * 0.5) * (width * bubble_scale)
-                x = x + (width * bubble_scale) * j
-
+                local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
                 local y = self.border_y + (border_height * border_scale) + height * 0.5
-                y = y + height * bubble_scale * i
+                x = x + (width * bubble_scale * j)
+                y = y + (height * bubble_scale * i)
 
                 local bubble = Bubble({
                     image = image,
@@ -468,9 +464,58 @@ function Game:create_bubbles(border_height, border_scale)
                 table.insert(self.bubbles, bubble)
             end
         end
+
     elseif self.difficulty == "medium" then
+        local cols = math.floor(window_width/(22 * bubble_scale))
+        for i = 0, self.rows - 1 do
+            for j = 0, cols - 1 do
+                local key = tablex.pick_random(self.bubbles_key)
+                local color_name = Colors.get_color(key)
+                local image = self.images_bubbles[key]
+                local width, height = image:getDimensions()
+                local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
+                local y = self.border_y + (border_height * border_scale) + height * 0.5
+                x = x + (width * bubble_scale * j)
+                y = y + (height * bubble_scale * i)
+
+                local bubble = Bubble({
+                    image = image,
+                    x = x, y = y,
+                    sx = bubble_scale, sy = bubble_scale,
+                    ox = width * 0.5, oy = height * 0.5,
+                    color_name = color_name,
+                })
+
+                table.insert(self.bubbles, bubble)
+            end
+            cols = cols - 1
+        end
 
     elseif self.difficulty == "hard" then
+        local cols = math.floor(window_width/(22 * bubble_scale))
+        for i = 0, self.rows - 1 do
+            for j = 0, cols - 1 do
+                local key = tablex.pick_random(self.bubbles_key)
+                local color_name = Colors.get_color(key)
+                local image = self.images_bubbles[key]
+                local width, height = image:getDimensions()
+                local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
+                local y = self.border_y + (border_height * border_scale) + height * 0.5
+                x = x + (width * bubble_scale * j)
+                y = y + (height * bubble_scale * i)
+
+                local bubble = Bubble({
+                    image = image,
+                    x = x, y = y,
+                    sx = bubble_scale, sy = bubble_scale,
+                    ox = width * 0.5, oy = height * 0.5,
+                    color_name = color_name,
+                })
+
+                table.insert(self.bubbles, bubble)
+            end
+            cols = cols - 1
+        end
 
     end
 
@@ -1044,6 +1089,14 @@ function Game:mousemoved(mx, my, dmx, dmy, istouch)
     if not self.is_targeting then return end
     if dmx ~= 0 or dmy ~= 0 then
         self:update_target_path(mx, my)
+    end
+end
+
+function Game:keypressed(key)
+    if key == "q" then
+        self.objects.bg_question.alpha = 0
+        self.objects.bg_question.text_alpha = 0
+        for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0 end
     end
 end
 
