@@ -48,6 +48,8 @@ Resources.images = {
         "base", "text_ready_go", "shuffle", "box_choice",
         "bg_box", "text_lose", "whole_star",
         "text_level_cleared", "empty_star",
+        "sound_on", "sound_mute", "bgm_on", "bgm_mute",
+        "btn_resume", "btn_restart", "btn_main_menu",
     },
 
     Easy = {"heart", "label", "settings", "shooter", "bg_question", "bg_win_lose", "text_win"},
@@ -77,6 +79,7 @@ Resources.sources = {
         {id = "snd_drop_bubbles", kind = "static"},
         {id = "snd_ready_go", kind = "stream"},
         {id = "bgm_level_cleared", kind = "stream"},
+        {id = "bgm_gameplay", kind = "stream"},
     }
 }
 
@@ -86,6 +89,7 @@ function Resources:init()
     self.font = love.graphics.newFont(path .. roboto_bold, 20)
     self.game_font = love.graphics.newFont(path .. roboto_bold, 16)
     self.wl_score_font = love.graphics.newFont(path .. roboto_bold, 38)
+    self.pause_font = love.graphics.newFont(path .. roboto_bold, 26)
 
     local bubbles_easy = love.filesystem.getDirectoryItems(path .. "images/BubblesEasy")
     for i, filename in ipairs(bubbles_easy) do

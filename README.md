@@ -7,7 +7,7 @@
 * Comment (put `--` at the start of the line) line numbers `25` and `26`
 * Uncomment (remove `--`) line number `29`
 * Open `game.lua`
-* Comment lines `42` to `47`
+* Comment lines with variables after the `--TODO remove these`
 * method 1 - zipping:
     * Select all files
     * Zip

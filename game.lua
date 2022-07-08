@@ -37,6 +37,7 @@ local info_dur = 0.5
 local wrong_dur = 1.5
 local pop_dur = 1
 local proceed_delay = 1.5
+local bgm_delay = 2
 
 --TODO remove these
 fade_in_sec = 0.1
@@ -45,6 +46,8 @@ info_show_dur = 0.1
 info_dur = 0.1
 wrong_dur = 0.1
 pop_dur = 0.25
+bgm_delay = 0.5
+
 
 function Game:new(difficulty, level, hearts)
     local id = self:type()
@@ -79,7 +82,8 @@ function Game:new(difficulty, level, hearts)
         "base", "shooter", "ammo", "shuffle",
         "txt_ready_go",
         "bg_question", "bg_box", "bg_win_lose", "text_lose", "text_win",
-        "text_level_cleared",
+        "text_level_cleared", "btn_sound", "btn_bgm",
+        "btn_resume", "btn_restart", "btn_main_menu",
     }
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
@@ -203,6 +207,7 @@ function Game:load()
         ox = settings_width, oy = settings_height,
         is_hoverable = false, is_clickable = false,
     })
+    self.objects.settings.on_clicked = function() self:open_settings() end
 
     local base_width, base_height = self.images_common.base:getDimensions()
     local base_scale = 0.25
@@ -273,6 +278,12 @@ function Game:load()
     if #self.bubbles > 0 then
         self.sources.snd_ready_go:play()
         self.sources.snd_ready_go:setLooping(false)
+
+        self.bgm_timer = timer(bgm_delay, nil, function()
+            self.sources.bgm_gameplay:play()
+            self.sources.bgm_gameplay:setLooping(true)
+            self.bgm_timer = nil
+        end)
     end
 end
 
@@ -351,6 +362,11 @@ function Game:show_question()
             ascii = 97
         end
     end
+
+    self.objects.shuffle.is_hoverable = false
+    self.objects.shuffle.is_clickable = false
+    self.objects.settings.is_clickable = false
+    self.objects.settings.is_hoverable = false
 
     self.is_question = true
     self.can_shoot = true
@@ -863,16 +879,161 @@ function Game:update_save_data()
     UserData:save()
 end
 
-function Game:update(dt)
-    if self.proceed_timer then
-        self.proceed_timer:update(dt)
+function Game:open_settings()
+    self.is_paused = true
+    self.start = false
+    self.objects.shuffle.is_hoverable = false
+    self.objects.shuffle.is_clickable = false
+    self.objects.settings.is_clickable = false
+    self.objects.settings.is_hoverable = false
+
+    local window_width, window_height = love.graphics.getDimensions()
+    local half_window_width = window_width * 0.5
+    local half_window_height = window_height * 0.5
+
+    local bg_width, bg_height = self.images_common.bg_box:getDimensions()
+    local bg_sx = (window_width - 64)/bg_width
+    local bg_sy = (half_window_height)/bg_height
+
+    local font = Resources.pause_font
+    local text = "PAUSED"
+
+    self.objects.bg_box = Button({
+        image = self.images_common.bg_box,
+        x = half_window_width, y = half_window_height,
+        sx = bg_sx, sy = bg_sy,
+        ox = bg_width * 0.5, oy = bg_height * 0.5,
+        is_hoverable = false, is_clickable = false,
+        font = font,
+        text_color = {0, 1, 0},
+        text = text,
+        ty = half_window_height - bg_height * bg_sy * 0.5 + font:getHeight() * 0.75,
+        tox = font:getWidth(text) * 0.5,
+        toy = 0,
+    })
+    local bg_box = self.objects.bg_box
+
+    local btn_scale = 0.5
+    local sound_width, sound_height = self.images_common.sound_on:getDimensions()
+    local btn_y = bg_box.ty + font:getHeight() * 1.25 + sound_height * btn_scale * 0.5
+
+    self.objects.btn_sound = Button({
+        image = self.images_common.sound_on,
+        x = window_width * 0.4,
+        y = btn_y,
+        sx = btn_scale, sy = btn_scale,
+        ox = sound_width * 0.5, oy = sound_height * 0.5,
+        is_hoverable = true, is_clickable = true,
+    })
+    local btn_sound = self.objects.btn_sound
+
+    local bgm_width, bgm_height = self.images_common.bgm_on:getDimensions()
+    self.objects.btn_bgm = Button({
+        image = self.images_common.bgm_on,
+        x = window_width * 0.6,
+        y = btn_y,
+        sx = btn_scale, sy = btn_scale,
+        ox = bgm_width * 0.5, oy = bgm_height * 0.5,
+        is_hoverable = true, is_clickable = true,
+    })
+    local btn_bgm = self.objects.btn_bgm
+
+    local gap = 16
+
+    local resume_width, resume_height = self.images_common.btn_resume:getDimensions()
+    self.objects.btn_resume = Button({
+        image = self.images_common.btn_resume,
+        x = half_window_width,
+        y = btn_bgm.y + bgm_height * btn_scale + gap,
+        sx = 0.5, sy = 0.5,
+        ox = resume_width * 0.5, oy = resume_height * 0.5,
+        is_clickable = true, is_hoverable = true
+    })
+
+    local restart_width, restart_height = self.images_common.btn_restart:getDimensions()
+    self.objects.btn_restart = Button({
+        image = self.images_common.btn_restart,
+        x = half_window_width,
+        y = self.objects.btn_resume.y + resume_height * 0.5 + gap,
+        sx = 0.5, sy = 0.5,
+        ox = restart_width * 0.5, oy = restart_height * 0.5,
+        is_clickable = true, is_hoverable = true
+    })
+
+    local main_menu_width, main_menu_height = self.images_common.btn_main_menu:getDimensions()
+    self.objects.btn_main_menu = Button({
+        image = self.images_common.btn_main_menu,
+        x = half_window_width,
+        y = self.objects.btn_restart.y + restart_height * 0.5 + gap,
+        sx = 0.5, sy = 0.5,
+        ox = main_menu_width * 0.5, oy = main_menu_height * 0.5,
+        is_clickable = true, is_hoverable = true
+    })
+
+    self.objects.btn_resume.on_clicked = function()
+        self.objects.bg_box = nil
+        self.objects.btn_sound = nil
+        self.objects.btn_bgm = nil
+        self.objects.btn_resume = nil
+        self.objects.btn_restart = nil
+        self.objects.btn_main_menu = nil
+        self.is_paused = false
+        self.start = true
+        self.objects.shuffle.is_hoverable = true
+        self.objects.shuffle.is_clickable = true
+        self.objects.settings.is_clickable = true
+        self.objects.settings.is_hoverable = true
     end
+
+    self.objects.btn_restart.on_clicked = function()
+        local next_state = require("game")
+        StateManager:switch(next_state, self.difficulty, self.level)
+    end
+
+    self.objects.btn_main_menu.on_clicked = function()
+        local next_state = require("main_menu")
+        StateManager:switch(next_state, self.difficulty)
+    end
+
+    btn_sound.on_clicked = function()
+        if btn_sound.image == self.images_common.sound_on then
+            btn_sound.image = self.images_common.sound_mute
+        else
+            btn_sound.image = self.images_common.sound_on
+        end
+
+        for key, source in ipairs(self.sources) do
+            if key ~= "bgm_gameplay" then
+                local volume = source:getVolume()
+                source:setVolume(math.abs(volume - 1))
+            end
+        end
+    end
+
+    btn_bgm.on_clicked = function()
+        if btn_bgm.image == self.images_common.bgm_on then
+            btn_bgm.image = self.images_common.bgm_mute
+        else
+            btn_bgm.image = self.images_common.bgm_on
+        end
+
+        local volume = self.sources.bgm_gameplay:getVolume()
+        self.sources.bgm_gameplay:setVolume(math.abs(volume - 1))
+    end
+end
+
+function Game:update(dt)
+    if self.bgm_timer then self.bgm_timer:update(dt) end
+    if self.proceed_timer then self.proceed_timer:update(dt) end
 
     if self.is_game_over then return end
 
-    self.game_timer = self.game_timer - dt
-    if self.game_timer <= 0 then
-        self:game_over()
+    if not self.is_paused then
+        self.game_timer = self.game_timer - dt
+        if self.game_timer <= 0 then
+            self.game_timer = 0
+            self:game_over()
+        end
     end
 
     if #self.bubbles == 0 then
@@ -1099,6 +1260,14 @@ function Game:keypressed(key)
         self.objects.bg_question.alpha = 0
         self.objects.bg_question.text_alpha = 0
         for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0 end
+    elseif key == "p" then
+        self:open_settings()
+    end
+end
+
+function Game:exit()
+    for _, source in pairs(self.sources) do
+        source:stop()
     end
 end
 
