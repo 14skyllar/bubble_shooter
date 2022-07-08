@@ -15,3 +15,16 @@
     * Double click the `.love` file
 * method 2 - direct
     * Run `love .` in the current directory
+
+
+## How to change Difficulty/Level
+
+* Open `main.lua`
+* At line `26`, replace the string (1st parameter) with the desired difficulty. Examples:
+    * `StateManager.current = Game("easy", 1)`
+    * `StateManager.current = Game("medium", 1)`
+    * `StateManager.current = Game("hard", 1)`
+* At line `26`, replace the number (2nd parameter) with the desired level number. Examples:
+    * `StateManager.current = Game("easy", 2)`
+    * `StateManager.current = Game("medium", 5)`
+    * `StateManager.current = Game("hard", 10)`
