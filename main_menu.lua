@@ -16,12 +16,12 @@ function MainMenu:new(start_screen)
 
     self.objects = {}
     self.objects_order = {
-        "title", "play", "quit", "settings", "scoreboard", "box",
-        "txt_settings", "txt_volume", "txt_scoreboard", "box_easy",
+        "title", "play", "quit", "settings", "btn_info", "scoreboard", "box",
+        "txt_settings", "txt_volume", "txt_scoreboard", "box_info", "box_easy",
         "box_medium", "box_hard", "close", "txt_easy_score",
         "txt_medium_score", "txt_hard_score", "txt_difficulty", "easy",
-        "medium", "hard", "txt_easy", "txt_medium", "txt_hard", "left_arrow",
-        "right_arrow", "slider", "reset_levels", "back",
+        "medium", "hard", "txt_easy", "txt_medium", "txt_hard",
+        "slider", "reset_levels", "back",
     }
 
     for i = 1, UserData.data.progress.hard.total do
@@ -83,6 +83,28 @@ function MainMenu:load()
         on_click_sound = self.sources.snd_buttons,
     })
 
+    local info_width, info_height = self.images.btn_info:getDimensions()
+    self.objects.btn_info = Button({
+        image = self.images.btn_info,
+        x = self.objects.settings.x + settings_width * button2_scale * 0.5 + info_width * 0.75 * button2_scale,
+        y = self.objects.settings.y,
+        sx = button2_scale, sy = button2_scale,
+        ox = info_width * 0.5, oy = info_height * 0.5,
+        on_click_sound = self.sources.snd_buttons,
+    })
+
+    local box_info_width, box_info_height = self.images.box_info:getDimensions()
+    local box_info_sx = (window_width - 48)/box_info_width
+    local box_info_sy = (window_height * 0.6)/box_info_height
+    self.objects.box_info = Button({
+        image = self.images.box_info,
+        x = half_window_width, y = half_window_height,
+        sx = box_info_sx, sy = box_info_sy,
+        ox = box_info_width * 0.5, oy = box_info_height * 0.5,
+        is_hoverable = false, is_clickable = false,
+        alpha = 0,
+    })
+
     local scoreboard_width, scoreboard_height = self.images.button_scoreboard:getDimensions()
     self.objects.scoreboard = Button({
         image = self.images.button_scoreboard,
@@ -140,8 +162,7 @@ function MainMenu:load()
         image = self.images.text_scoreboard,
         x = half_window_width,
         y = self.objects.box.y - self.objects.box.oy * 0.5,
-        sx = 0.5, sy = 0.5,
-        ox = txt_scoreboard_width * 0.5, oy = txt_scoreboard_height * 0.5,
+        ox = txt_scoreboard_width * 0.5, oy = txt_scoreboard_height * 0.75,
         is_hoverable = false, is_clickable = false,
         alpha = 0,
     })
@@ -316,6 +337,8 @@ function MainMenu:load()
 
     self.objects.play.on_clicked = function()
         for _, obj in ipairs(self.group_main) do obj.alpha = 0 end
+        self.objects.settings.alpha = 0
+        self.objects.btn_info.alpha = 0
         self.objects.scoreboard.alpha = 0
         for _, obj in ipairs(self.group_difficulty) do obj.alpha = 1 end
 
@@ -342,8 +365,37 @@ function MainMenu:load()
         for _, obj in ipairs(self.group_settings) do obj.alpha = 1 end
 
         self.objects.play.is_clickable = false
+        self.objects.play.is_hoverable = false
         self.objects.quit.is_clickable = false
+        self.objects.quit.is_hoverable = false
         self.objects.settings.is_clickable = false
+        self.objects.settings.is_hoverable = false
+        self.objects.btn_info.is_hoverable = false
+        self.objects.btn_info.is_clickable = false
+        self.objects.scoreboard.is_clickable = false
+        self.objects.scoreboard.is_hoverable = false
+        self.objects.back.is_clickable = true
+        self.objects.reset_levels.is_clickable = true
+        self.objects.slider.is_clickable = true
+    end
+
+    self.objects.btn_info.on_clicked = function()
+        for _, obj in ipairs(self.group_main) do obj.alpha = 0 end
+        self.objects.box_info.alpha = 1
+        self.objects.close.alpha = 1
+        self.objects.close.is_clickable = 1
+        self.objects.close.is_hoverable = 1
+
+        self.objects.play.is_clickable = false
+        self.objects.play.is_hoverable = false
+        self.objects.quit.is_clickable = false
+        self.objects.quit.is_hoverable = false
+        self.objects.settings.is_clickable = false
+        self.objects.settings.is_hoverable = false
+        self.objects.btn_info.is_hoverable = false
+        self.objects.btn_info.is_clickable = false
+        self.objects.scoreboard.is_clickable = false
+        self.objects.scoreboard.is_hoverable = false
         self.objects.back.is_clickable = true
         self.objects.reset_levels.is_clickable = true
         self.objects.slider.is_clickable = true
@@ -357,9 +409,15 @@ function MainMenu:load()
         for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 1 end
 
         self.objects.play.is_clickable = false
+        self.objects.play.is_hoverable = false
         self.objects.quit.is_clickable = false
+        self.objects.quit.is_hoverable = false
         self.objects.settings.is_clickable = false
+        self.objects.settings.is_hoverable = false
+        self.objects.btn_info.is_clickable = false
+        self.objects.btn_info.is_hoverable = false
         self.objects.scoreboard.is_clickable = false
+        self.objects.scoreboard.is_hoverable = false
         self.objects.back.is_clickable = false
         self.objects.reset_levels.is_clickable = true
         self.objects.close.is_clickable = true
@@ -368,16 +426,29 @@ function MainMenu:load()
     self.objects.back.on_clicked = function()
         self.objects.reset_levels:update_y(self.objects.reset_levels.y)
 
+        local diff_back = self.objects.txt_difficulty.alpha == 0 and self.objects.slider.alpha == 0
+
         for _, obj in ipairs(self.group_main) do obj.alpha = 1 end
+        self.objects.settings.alpha = 1
+        self.objects.btn_info.alpha = 1
         self.objects.scoreboard.alpha = 1
         for _, obj in ipairs(self.group_settings) do obj.alpha = 0 end
         for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 0 end
-        for _, obj in ipairs(self.group_difficulty) do obj.alpha = 0 end
+
+        if self.group_stage then
+            for _, obj in ipairs(self.group_stage) do obj.alpha = 0 end
+        end
 
         self.objects.play.is_clickable = true
+        self.objects.play.is_hoverable = true
         self.objects.quit.is_clickable = true
+        self.objects.quit.is_hoverable = true
         self.objects.settings.is_clickable = true
+        self.objects.settings.is_hoverable = true
+        self.objects.btn_info.is_clickable = true
+        self.objects.btn_info.is_hoverable = true
         self.objects.scoreboard.is_clickable = true
+        self.objects.scoreboard.is_hoverable = true
         self.objects.back.is_clickable = false
         self.objects.reset_levels.is_clickable = false
         self.objects.slider.is_clickable = false
@@ -388,6 +459,12 @@ function MainMenu:load()
         if self.group_stage then
             tablex.clear(self.group_stage)
         end
+
+        if diff_back then
+            self.objects.play.on_clicked()
+        else
+            for _, obj in ipairs(self.group_difficulty) do obj.alpha = 0 end
+        end
     end
 
     self.objects.close.on_clicked = function()
@@ -395,10 +472,17 @@ function MainMenu:load()
         self.objects.scoreboard.alpha = 1
         for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 0 end
 
+        self.objects.box_info.alpha = 0
         self.objects.play.is_clickable = true
+        self.objects.play.is_hoverable = true
         self.objects.quit.is_clickable = true
+        self.objects.quit.is_hoverable = true
         self.objects.settings.is_clickable = true
+        self.objects.settings.is_hoverable = true
+        self.objects.btn_info.is_clickable = true
+        self.objects.btn_info.is_hoverable = true
         self.objects.scoreboard.is_clickable = true
+        self.objects.scoreboard.is_hoverable = true
         self.objects.reset_levels.is_clickable = false
         self.objects.close.is_clickable = false
     end
@@ -454,71 +538,6 @@ function MainMenu:show_levels(difficulty)
 
     local box = self.objects.box
     local bx = box.pos.x
-    local bw, bh = box.size.x, box.size.y
-
-    local left_arrow_width, left_arrow_height = self.images.button_arrow_left:getDimensions()
-    self.objects.left_arrow = Button({
-        image = self.images.button_arrow_left,
-        x = bx + left_arrow_width * 0.5,
-        y = box.pos.y + bh * 0.85,
-        sx = 0.5, sy = 0.5,
-        ox = left_arrow_width * 0.5,
-        oy = left_arrow_height * 0.5,
-        on_click_sound = self.sources.snd_buttons,
-    })
-
-    self.objects.left_arrow.on_clicked = function()
-        if self.difficulty == "easy" then
-            self.objects.reset_levels:update_y(self.objects.reset_levels.y)
-
-            for _, obj in ipairs(self.group_stage) do
-                obj.alpha = 0
-                obj.is_clickable = false
-                obj.is_hoverable = false
-            end
-            for _, obj in ipairs(self.group_difficulty) do obj.alpha = 1 end
-            self.objects.box.alpha = 0
-            self.objects.left_arrow.alpha = 0
-            self.objects.right_arrow.alpha = 0
-
-            self.objects.back.is_clickable = true
-            self.objects.easy.is_clickable = true
-            self.objects.medium.is_clickable = true
-            self.objects.hard.is_clickable = true
-            self.objects.left_arrow.is_clickable = false
-            self.objects.right_arrow.is_clickable = false
-
-            if self.group_stage then
-                tablex.clear(self.group_stage)
-            end
-        elseif self.difficulty == "medium" then
-            self:show_levels("easy")
-        elseif self.difficulty == "hard" then
-            self:show_levels("medium")
-        end
-    end
-
-    if difficulty ~= "hard" then
-        local right_arrow_width, right_arrow_height = self.images.button_arrow_right:getDimensions()
-        self.objects.right_arrow = Button({
-            image = self.images.button_arrow_right,
-            x = bx + bw - right_arrow_width * 0.5,
-            y = box.pos.y + bh * 0.85,
-            sx = 0.5, sy = 0.5,
-            ox = right_arrow_width * 0.5,
-            oy = right_arrow_height * 0.5,
-        on_click_sound = self.sources.snd_buttons,
-        })
-
-        self.objects.right_arrow.on_clicked = function()
-            if self.difficulty == "easy" then
-                self:show_levels("medium")
-            elseif self.difficulty == "medium" then
-                self:show_levels("hard")
-            end
-        end
-    end
-
     local txt_obj = self.objects[txt_obj_id]
     local by = txt_obj.y
     local image_star = self.images["star_" .. difficulty]
@@ -543,8 +562,6 @@ function MainMenu:show_levels(difficulty)
     self.group_stage = {
         self.objects.box,
         self.objects[txt_obj_id],
-        self.objects.left_arrow,
-        self.objects.right_arrow,
     }
 
     for i = 1, progress.total do
@@ -594,6 +611,10 @@ function MainMenu:show_levels(difficulty)
     for _, obj in ipairs(self.group_stage) do
         obj.alpha = 1
     end
+
+    self.objects.back.alpha = 1
+    self.objects.back.is_hoverable = true
+    self.objects.back.is_clickable = true
 end
 
 function MainMenu:update(dt)
