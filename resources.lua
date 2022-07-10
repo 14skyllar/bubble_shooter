@@ -92,6 +92,7 @@ function Resources:init()
     self.game_font = love.graphics.newFont(path .. roboto_bold, 16)
     self.wl_score_font = love.graphics.newFont(path .. roboto_bold, 38)
     self.pause_font = love.graphics.newFont(path .. roboto_bold, 26)
+    self.score_font = love.graphics.newFont(path .. roboto_bold, 32)
 
     local bubbles_easy = love.filesystem.getDirectoryItems(path .. "images/BubblesEasy")
     for i, filename in ipairs(bubbles_easy) do

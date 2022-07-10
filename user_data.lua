@@ -12,10 +12,10 @@ local UserData = {
         },
 
         scores = {
-            easy = {current = 0, total = 30},
-            medium = {current = 0, total = 60},
-            hard = {current = 0, total = 100},
-        }
+            easy = {current = 0},
+            medium = {current = 0},
+            hard = {current = 0},
+        },
     },
 }
 

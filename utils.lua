@@ -31,4 +31,10 @@ function Utils.get_angle(obj, x, y)
     return r
 end
 
+function Utils.sec_to_time_str(seconds)
+  local min = math.floor((seconds % 3600)/60)
+  local sec = math.floor((seconds % 60))
+  return string.format("%02d:%02d", min, sec)
+end
+
 return Utils

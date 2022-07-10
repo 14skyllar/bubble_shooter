@@ -22,12 +22,6 @@ local game_timers = {
     hard = 3 * 60,
 }
 
-local scoring = {
-    easy = 3,
-    medium = 4,
-    hard = 5,
-}
-
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
 
 local fade_in_sec = 2
@@ -65,6 +59,7 @@ function Game:new(difficulty, level, hearts)
     self.rows = rows[difficulty][level]
     self.rotation = 0
     self.game_timer = game_timers[difficulty]
+    self.score = 0
     assert(self.rows ~= nil and self.rows > 0)
 
     local diff = string.upper(difficulty:sub(1, 1)) .. difficulty:sub(2)
@@ -585,14 +580,14 @@ function Game:after_shoot()
 
     local stack = {ammo}
     local found = {}
-    found[ammo] = true
+    found[ammo] = ammo
 
     while #stack > 0 do
         local current = table.remove(stack, 1)
         local within_radius = current:get_within_radius(self.bubbles)
         for _, bubble in ipairs(within_radius) do
             if not found[bubble] then
-                found[bubble] = true
+                found[bubble] = bubble
                 table.insert(stack, bubble)
             end
         end
@@ -604,7 +599,8 @@ function Game:after_shoot()
         self.sources.snd_bubble_pop:setLooping(false)
 
         self.has_match = true
-        for k in pairs(found) do
+
+        for k, v in pairs(found) do
             for i = #self.bubbles, 1, -1 do
                 local bubble = self.bubbles[i]
                 if bubble == k then
@@ -612,16 +608,30 @@ function Game:after_shoot()
                         function(progress)
                             bubble.alpha = 1 - progress
                             ammo.alpha = 1 - progress
+
+                            if self.pending_score then
+                                self.pending_score.alpha = 1 - progress
+                                self.pending_score.y = self.pending_score.y - progress
+                            end
                         end,
                         function()
                             bubble.is_dead = true
                             ammo.is_dead = true
+                            self.pending_score = nil
                         end)
 
                     table.insert(self.pop_timers, t)
                 end
             end
         end
+
+        local score = matches == 3 and "1" or "2"
+        self.score = self.score + score
+        self.pending_score = {
+            text = score,
+            x = ammo.x, y = ammo.y,
+            alpha = 1,
+        }
     end
 
     if ammo then
@@ -870,11 +880,7 @@ function Game:update_save_data()
     end
 
     local scores_data = UserData.data.scores[self.difficulty]
-    local score = scoring[self.difficulty]
-    scores_data.current = scores_data.current + score
-    if scores_data.current > scores_data.total then
-        scores_data.current = scores_data.total
-    end
+    scores_data.current = scores_data.current + self.score
 
     UserData:save()
 end
@@ -1042,7 +1048,13 @@ function Game:update(dt)
 
     local th = self.objects.time_holder
     if th then
-        th.text = string.format("Time: %d", self.game_timer)
+        local str = Utils.sec_to_time_str(self.game_timer)
+        th.text = string.format("Time: %s", str)
+    end
+
+    local ts = self.objects.score_holder
+    if ts and self.score > 0 then
+        ts.text = string.format("Score: %d", self.score)
     end
 
     if not self.start then
@@ -1195,6 +1207,15 @@ function Game:draw()
         if btn then
             btn:draw()
         end
+    end
+
+    if self.pending_score then
+        love.graphics.setColor(1, 0, 0, self.pending_score.alpha)
+        local tmp_font = love.graphics.getFont()
+        love.graphics.setFont(Resources.score_font)
+        love.graphics.print(self.pending_score.text, self.pending_score.x, self.pending_score.y)
+        love.graphics.setFont(tmp_font)
+        love.graphics.setColor(1, 1, 1, 1)
     end
 end
 
