@@ -315,36 +315,64 @@ function Game:show_question()
         limit = limit,
     })
 
-    --TODO
-    self.n_choices = 4
-
     local choice_width, choice_height = self.images_common.box_choice:getDimensions()
-    local choice_sx = (window_width - padding * 2)/choice_width
-    local choice_sy = ((self.objects.bg_question.half_size.y - padding)/choice_height)/self.n_choices
     local ascii = 97
 
+    local n_choices = self.current_question.true_or_false ~= nil and 2 or 4
     local _, wrap = font:getWrap(self.current_question.question, limit)
     ty = ty + font:getHeight() * (#wrap + 2)
 
+    local choice_sx = (window_width - padding * 2)/choice_width
+    local choice_sy = ((self.objects.bg_question.half_size.y - (padding * 0.5))/choice_height)/self.n_choices
+
     for i = 1, self.n_choices do
         local key = "choice_" .. i
-        local letter = string.char(ascii)
-        local str_question = self.current_question[letter]
+        local str_question, letter
+
+        if self.current_question.true_or_false then
+            letter = i == 1
+            str_question = tostring(letter)
+        else
+            letter = string.char(ascii)
+            str_question = self.current_question[letter]
+        end
+
         local txt_width = font:getWidth(str_question)
         local txt_height = font:getHeight()
+        local y = ty + (choice_height + margin * 1.5) * choice_sy * (i - 1)
+
+        local _, wrap_choice = font:getWrap(str_question, (choice_width * choice_sx))
+        local tsx, tsy
+        if #wrap_choice > 1 then
+            txt_width = 0
+            for _, txt in ipairs(wrap_choice) do
+                local w = font:getWidth(txt)
+                txt_width = math.max(txt_width, w)
+            end
+
+            tsx = (choice_width * choice_sx)/(txt_width + padding)
+            tsy = (choice_height * choice_sy)/(font:getHeight() * (#wrap_choice + 1))
+        end
 
         self.objects[key] = Button({
             image = self.images_common.box_choice,
             x = half_window_width,
-            y = ty + (choice_height + margin * 1.5) * choice_sy * (i - 1),
+            y = y,
             sx = choice_sx,
             sy = choice_sy,
             ox = choice_width * 0.5,
             oy = choice_height * 0.5,
             font = font,
             text = str_question,
+            tx = half_window_width - choice_width * choice_sx * 0.5 + txt_width * 0.5,
+            ty = y - choice_height * choice_sy * 0.5 + txt_height * 0.5,
             tox = txt_width * 0.5,
             toy = txt_height * 0.5,
+            is_printf = true,
+            limit = choice_width * choice_sx,
+            align = "center",
+            tsx = tsx,
+            tsy = tsy,
             value = letter,
             on_click_sound = self.sources.snd_buttons,
         })
@@ -352,9 +380,17 @@ function Game:show_question()
             self:check_answer(self.objects[key])
         end
 
-        ascii = ascii + 1
-        if ascii > 100 then
-            ascii = 97
+        if not self.current_question.true_or_false then
+            ascii = ascii + 1
+            if ascii > 100 then
+                ascii = 97
+            end
+        end
+
+        if i > n_choices then
+            self.objects[key].alpha = 0
+            self.objects[key].is_clickable = false
+            self.objects[key].is_hoverable = false
         end
     end
 

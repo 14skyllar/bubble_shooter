@@ -45,6 +45,8 @@ function Button:new(opts)
     self.ty = opts.ty or self.y
     self.tox = opts.tox or 0
     self.toy = opts.toy or 0
+    self.tsx = opts.tsx or 1
+    self.tsy = opts.tsy or 1
 
     self.is_printf = opts.is_printf
     self.limit = opts.limit
@@ -85,7 +87,7 @@ function Button:draw()
             love.graphics.setFont(self.font)
         end
 
-        local tsx, tsy = 1, 1
+        local tsx, tsy = self.tsx, self.tsy
         if self.is_hoverable and self.is_overlap then
             tsx = tsx + self.sx_dt
             tsy = tsy + self.sy_dt
@@ -97,7 +99,8 @@ function Button:draw()
         if not self.is_printf then
             love.graphics.print(self.text, self.tx, self.ty, 0, tsx, tsy, self.tox, self.toy)
         else
-            love.graphics.printf(self.text, self.tx, self.ty, self.limit, self.align)
+            love.graphics.printf(self.text, self.tx, self.ty, self.limit, self.align,
+             0, tsx, tsy, self.tox, self.toy)
         end
 
         if self.font then
