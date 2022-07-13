@@ -1,7 +1,9 @@
 [submodule "libs/batteries"]
 	path = libs/batteries
 	url = https://github.com/1bardesign/batteries
-
 [submodule "libs/json"]
 	path = libs/json
 	url = https://github.com/rxi/json.lua
+[submodule "libs/anim8"]
+	path = libs/anim8
+	url = https://github.com/kikito/anim8

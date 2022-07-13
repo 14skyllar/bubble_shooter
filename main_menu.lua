@@ -16,7 +16,7 @@ function MainMenu:new(start_screen)
 
     self.objects = {}
     self.objects_order = {
-        "title", "play", "quit", "settings", "btn_info", "scoreboard", "box",
+        "title", "play", "quit", "settings", "gear", "btn_info", "scoreboard", "box",
         "txt_settings", "txt_volume", "txt_scoreboard", "box_info", "box_easy",
         "box_medium", "box_hard", "close", "txt_easy_score",
         "txt_medium_score", "txt_hard_score", "txt_difficulty", "easy",
@@ -81,6 +81,14 @@ function MainMenu:load()
         sx = button2_scale, sy = button2_scale,
         ox = settings_width * 0.5, oy = settings_height * 0.5,
         on_click_sound = self.sources.snd_buttons,
+    })
+
+    local gear_width, gear_height = self.images.gear:getDimensions()
+    self.objects.gear = Button({
+        image = self.images.gear,
+        x = self.objects.settings.x, y = self.objects.settings.y,
+        sx = button2_scale, sy = button2_scale,
+        ox = gear_width * 0.5, oy = gear_height * 0.5,
     })
 
     local info_width, info_height = self.images.btn_info:getDimensions()
@@ -618,6 +626,9 @@ function MainMenu:show_levels(difficulty)
 end
 
 function MainMenu:update(dt)
+    local obj_gear = self.objects.gear
+    obj_gear.r = obj_gear.r + dt
+
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn then
