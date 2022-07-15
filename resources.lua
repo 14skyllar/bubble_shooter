@@ -6,6 +6,7 @@ Resources.fonts = {
 
 Resources.images = {
     MainMenu = {
+        "sparkle",
         "background",
         "title",
         "close",

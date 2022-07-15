@@ -16,12 +16,12 @@ function MainMenu:new(start_screen)
 
     self.objects = {}
     self.objects_order = {
-        "title", "play", "quit", "settings", "gear", "btn_info", "scoreboard", "box",
-        "txt_settings", "txt_volume", "txt_scoreboard", "box_info", "box_easy",
-        "box_medium", "box_hard", "close", "txt_easy_score",
-        "txt_medium_score", "txt_hard_score", "txt_difficulty", "easy",
-        "medium", "hard", "txt_easy", "txt_medium", "txt_hard",
-        "slider", "reset_levels", "back",
+        "title", "play", "quit", "settings", "gear", "btn_info", "scoreboard",
+        "sparkle1", "sparkle2", "box", "txt_settings", "txt_volume",
+        "txt_scoreboard", "box_info", "box_easy", "box_medium", "box_hard",
+        "close", "txt_easy_score", "txt_medium_score", "txt_hard_score",
+        "txt_difficulty", "easy", "medium", "hard", "txt_easy", "txt_medium",
+        "txt_hard", "slider", "reset_levels", "back",
     }
 
     for i = 1, UserData.data.progress.hard.total do
@@ -120,6 +120,52 @@ function MainMenu:load()
         sx = button2_scale, sy = button2_scale,
         ox = scoreboard_width * 0.5, oy = scoreboard_height * 0.5,
         on_click_sound = self.sources.snd_buttons,
+    })
+
+    self.objects.sparkle1 = Button({
+        image = self.images.sparkle,
+        animated = {
+            g = "1-12", w = 105, h = 94,
+            speed = 0.05,
+            n_frames = 12,
+            start_frame = love.math.random(1, 12),
+            on_loop = function(anim8)
+                anim8:pauseAtEnd()
+                self.timer_sparkle1 = timer(love.math.random(0.3, 1.5), nil, function()
+                    anim8:gotoFrame(1)
+                    anim8:resume()
+                    self.timer_sparkle1 = nil
+                end)
+            end
+        },
+        x = self.objects.scoreboard.x - scoreboard_width * button2_scale * 0.4,
+        y = self.objects.scoreboard.y - scoreboard_height * button2_scale * 0.4,
+        sx = button2_scale, sy = button2_scale,
+        ox = 105/2, oy = 94/2,
+        is_hoverable = false, is_clickable = false,
+    })
+
+    self.objects.sparkle2 = Button({
+        image = self.images.sparkle,
+        animated = {
+            g = "1-12", w = 105, h = 94,
+            speed = 0.05,
+            n_frames = 12,
+            start_frame = love.math.random(1, 12),
+            on_loop = function(anim8)
+                anim8:pauseAtEnd()
+                self.timer_sparkle2 = timer(love.math.random(0.3, 1.5), nil, function()
+                    anim8:gotoFrame(1)
+                    anim8:resume()
+                    self.timer_sparkle2 = nil
+                end)
+            end
+        },
+        x = self.objects.scoreboard.x + scoreboard_width * button2_scale * 0.4,
+        y = self.objects.scoreboard.y + scoreboard_height * button2_scale * 0.4,
+        sx = button2_scale, sy = button2_scale,
+        ox = 105/2, oy = 94/2,
+        is_hoverable = false, is_clickable = false,
     })
 
     local box_width, box_height = self.images.box:getDimensions()
@@ -349,6 +395,8 @@ function MainMenu:load()
         self.objects.gear.alpha = 0
         self.objects.btn_info.alpha = 0
         self.objects.scoreboard.alpha = 0
+        self.objects.sparkle1.alpha = 0
+        self.objects.sparkle2.alpha = 0
         for _, obj in ipairs(self.group_difficulty) do obj.alpha = 1 end
 
         self.objects.play.is_clickable = false
@@ -442,6 +490,8 @@ function MainMenu:load()
         self.objects.gear.alpha = 1
         self.objects.btn_info.alpha = 1
         self.objects.scoreboard.alpha = 1
+        self.objects.sparkle1.alpha = 1
+        self.objects.sparkle2.alpha = 1
         for _, obj in ipairs(self.group_settings) do obj.alpha = 0 end
         for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 0 end
 
@@ -630,6 +680,9 @@ end
 function MainMenu:update(dt)
     local obj_gear = self.objects.gear
     obj_gear.r = obj_gear.r + dt
+
+    if self.timer_sparkle1 then self.timer_sparkle1:update(dt) end
+    if self.timer_sparkle2 then self.timer_sparkle2:update(dt) end
 
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]

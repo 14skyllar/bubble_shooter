@@ -1,4 +1,6 @@
+local Anim8 = require("libs.anim8.anim8")
 local Dev = require("dev")
+
 local Button = class({
     name = "Button"
 })
@@ -11,6 +13,20 @@ function Button:new(opts)
     self.ox, self.oy = opts.ox or 0, opts.oy or 0
     self.sx_dt = opts.sx_dt or 0.1
     self.sy_dt = opts.sy_dt or 0.1
+
+    self.animated = opts.animated
+    if self.animated then
+        local g = Anim8.newGrid(self.animated.w, self.animated.h, self.image:getDimensions())
+        self.anim8 = Anim8.newAnimation(
+            g(self.animated.g, 1),
+            self.animated.speed,
+            self.animated.on_loop
+        )
+
+        if self.animated.start_frame then
+            self.anim8:gotoFrame(self.animated.start_frame)
+        end
+    end
 
     local w, h = self.image:getDimensions()
     w, h = w * self.sx, h * self.sy
@@ -68,6 +84,10 @@ function Button:update(dt)
     local mx, my = love.mouse.getPosition()
     self.mouse.x, self.mouse.y = mx, my
     self.is_overlap = intersect.point_aabb_overlap(self.mouse, self.center_pos, self.half_size)
+
+    if self.anim8 then
+        self.anim8:update(dt)
+    end
 end
 
 function Button:draw()
@@ -78,7 +98,12 @@ function Button:draw()
     end
 
     love.graphics.setColor(1, 1, 1, self.alpha)
-    love.graphics.draw(self.image, self.x, self.y, self.r, sx, sy, self.ox, self.oy)
+
+    if self.anim8 then
+        self.anim8:draw(self.image, self.x, self.y, self.r, self.sx, self.sy, self.ox, self.oy)
+    else
+        love.graphics.draw(self.image, self.x, self.y, self.r, sx, sy, self.ox, self.oy)
+    end
 
     if self.text then
         local tmp_font
