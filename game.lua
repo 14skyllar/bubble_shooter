@@ -1,3 +1,5 @@
+local utf8 = require("utf8")
+
 local Bubble = require("bubble")
 local Button = require("button")
 local Colors = require("colors")
@@ -20,6 +22,12 @@ local game_timers = {
     easy = 5 * 60,
     medium = 4 * 60,
     hard = 3 * 60,
+}
+
+local push_back = {
+    easy = 5,
+    medium = 4,
+    hard = 3,
 }
 
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
@@ -295,6 +303,14 @@ function Game:show_question()
     local ty = wy - bg_question_height * sy * 0.5 + margin
     local limit = bg_question_width * sx - margin * 2
 
+    local most = 0
+    for _, q in ipairs(self.questions) do
+        if q.identification then
+            most = math.max(most, #q.answer)
+        end
+    end
+    self.max_answer_length = most
+
     self.current_question = tablex.take_random(self.questions)
     print("Remaining questions:", #self.questions)
 
@@ -318,12 +334,22 @@ function Game:show_question()
     local choice_width, choice_height = self.images_common.box_choice:getDimensions()
     local ascii = 97
 
-    local n_choices = self.current_question.true_or_false ~= nil and 2 or 4
+    local n_choices = 4
+    if self.current_question.true_or_false then
+        n_choices = 2
+    elseif self.current_question.identification then
+        n_choices = 1
+    end
+
     local _, wrap = font:getWrap(self.current_question.question, limit)
     ty = ty + font:getHeight() * (#wrap + 2)
 
     local choice_sx = (window_width - padding * 2)/choice_width
     local choice_sy = ((self.objects.bg_question.half_size.y - (padding * 0.5))/choice_height)/self.n_choices
+
+    if self.current_question.identification then
+        choice_sy = ((self.objects.bg_question.half_size.y - (padding * 0.5))/(choice_height * 2))
+    end
 
     for i = 1, self.n_choices do
         local key = "choice_" .. i
@@ -332,6 +358,9 @@ function Game:show_question()
         if self.current_question.true_or_false then
             letter = i == 1
             str_question = tostring(letter)
+        elseif self.current_question.identification then
+            letter = ""
+            str_question = "(tap here to type)"
         else
             letter = string.char(ascii)
             str_question = self.current_question[letter]
@@ -339,10 +368,16 @@ function Game:show_question()
 
         local txt_width = font:getWidth(str_question)
         local txt_height = font:getHeight()
-        local y = ty + (choice_height + margin * 1.5) * choice_sy * (i - 1)
+        local y
+
+        if self.current_question.identification then
+            y = ty + (choice_height + margin)
+        else
+            y = ty + (choice_height + margin * 1.5) * choice_sy * (i - 1)
+        end
 
         local _, wrap_choice = font:getWrap(str_question, (choice_width * choice_sx))
-        local tsx, tsy
+        local text_x, text_y, tsx, tsy
         if #wrap_choice > 1 then
             txt_width = 0
             for _, txt in ipairs(wrap_choice) do
@@ -350,8 +385,13 @@ function Game:show_question()
                 txt_width = math.max(txt_width, w)
             end
 
+            text_x = half_window_width - choice_width * choice_sx * 0.5 + txt_width * 0.5
+            text_y = y - choice_height * choice_sy * 0.5 + txt_height * 0.5
             tsx = (choice_width * choice_sx)/(txt_width + padding)
             tsy = (choice_height * choice_sy)/(font:getHeight() * (#wrap_choice + 1))
+        else
+            text_x = half_window_width
+            text_y = y
         end
 
         self.objects[key] = Button({
@@ -364,11 +404,10 @@ function Game:show_question()
             oy = choice_height * 0.5,
             font = font,
             text = str_question,
-            tx = half_window_width - choice_width * choice_sx * 0.5 + txt_width * 0.5,
-            ty = y - choice_height * choice_sy * 0.5 + txt_height * 0.5,
+            tx = text_x, ty = text_y,
             tox = txt_width * 0.5,
             toy = txt_height * 0.5,
-            is_printf = true,
+            is_printf = #wrap_choice > 1,
             limit = choice_width * choice_sx,
             align = "center",
             tsx = tsx,
@@ -376,8 +415,18 @@ function Game:show_question()
             value = letter,
             on_click_sound = self.sources.snd_buttons,
         })
-        self.objects[key].on_clicked = function()
-            self:check_answer(self.objects[key])
+        local obj = self.objects[key]
+
+        obj.on_clicked = function()
+            if self.current_question.identification then
+                love.keyboard.setKeyRepeat(true)
+                love.keyboard.setTextInput(true)
+                self.waiting_for_input = obj
+                obj.text = ""
+                obj.is_hoverable = false
+            else
+                self:check_answer(self.objects[key])
+            end
         end
 
         if not self.current_question.true_or_false then
@@ -388,9 +437,9 @@ function Game:show_question()
         end
 
         if i > n_choices then
-            self.objects[key].alpha = 0
-            self.objects[key].is_clickable = false
-            self.objects[key].is_hoverable = false
+            obj.alpha = 0
+            obj.is_clickable = false
+            obj.is_hoverable = false
         end
     end
 
@@ -591,7 +640,7 @@ function Game:create_bubbles(border_height, border_scale)
     local threshold = window_height * 0.55
 
     if lowest_y > threshold then
-        self:wrong_answer(-self.increase * scoring[self.difficulty], true)
+        self:wrong_answer(-self.increase * push_back[self.difficulty], true)
     end
 end
 
@@ -636,7 +685,7 @@ function Game:after_shoot()
 
         self.has_match = true
 
-        for k, v in pairs(found) do
+        for k in pairs(found) do
             for i = #self.bubbles, 1, -1 do
                 local bubble = self.bubbles[i]
                 if bubble == k then
@@ -721,6 +770,7 @@ function Game:reload()
 end
 
 function Game:update_target_path(mx, my)
+    if self.is_game_over then return end
     local within_range = self.rotation >= MIN_ANGLE and self.rotation <= MAX_ANGLE
     if not within_range then return end
     tablex.clear(self.target_path)
@@ -818,12 +868,12 @@ function Game:game_over(has_won)
     })
     local bg_win_lose = self.objects.bg_win_lose
     local font = Resources.wl_score_font
-    local text_key, score, star_image, text_image
+    local text_key, star_image, text_image
+    local score = self.score or 0
 
     if has_won then
         text_key = "text_win"
         star_image = self.images_common.whole_star
-        score = scoring[self.difficulty]
         text_image = self.images.text_win
 
         self.sources.bgm_level_cleared:play()
@@ -831,7 +881,6 @@ function Game:game_over(has_won)
     else
         text_key = "text_lose"
         star_image = self.images_common.empty_star
-        score = 0
         text_image = self.images_common.text_lose
     end
 
@@ -1104,6 +1153,11 @@ function Game:update(dt)
         self.wait_timer:update(dt)
     end
 
+    local obj_input = self.waiting_for_input
+    if obj_input then
+        obj_input.is_hovered = true
+    end
+
     if self.start then
         local shooter = self.objects.shooter
         local mx, my = love.mouse.getPosition()
@@ -1196,7 +1250,7 @@ function Game:update(dt)
             self.hearts = self.hearts - 1
 
             if self.hearts > 0 then
-                self:wrong_answer(-self.increase * scoring[self.difficulty])
+                self:wrong_answer(-self.increase * push_back[self.difficulty])
             else
                 self:game_over()
             end
@@ -1319,6 +1373,57 @@ function Game:keypressed(key)
         for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0 end
     elseif key == "p" then
         self:open_settings()
+    end
+
+    local obj_input = self.waiting_for_input
+    if obj_input then
+        if key == "backspace" then
+            local byteoffset = utf8.offset(obj_input.text, -1)
+            if byteoffset then
+                obj_input.text = string.sub(obj_input.text, 1, byteoffset - 1)
+            end
+        elseif key == "return" then
+            love.keyboard.setKeyRepeat(false)
+            love.keyboard.setTextInput(false)
+            obj_input.value = obj_input.text
+            self:check_answer(obj_input)
+            self.waiting_for_input = nil
+        end
+    end
+end
+
+function Game:textinput(text)
+    local obj_input = self.waiting_for_input
+    if not obj_input then return end
+    if #obj_input.text > self.max_answer_length then return end
+
+    obj_input.text = obj_input.text .. text
+
+    local font = Resources.font
+    local padding = 64
+    local window_width = love.graphics.getWidth()
+    local choice_width, choice_height = self.images_common.box_choice:getDimensions()
+    local choice_sx = (window_width - padding * 2)/choice_width
+    local _, wrap_choice = font:getWrap(obj_input.text, obj_input.limit)
+    local n = #wrap_choice
+
+    if n > 1 then
+        local choice_sy = obj_input.sy
+        local txt_width = font:getWidth(obj_input.text)
+        local txt_height = font:getHeight()
+
+        text_x = window_width * 0.5 - choice_width * choice_sx * 0.5 + txt_width * 0.5
+        text_y = obj_input.y - choice_height * choice_sy * 0.5 + txt_height * 0.5 + 8
+        local tsx = (choice_width * choice_sx)/(txt_width + padding)
+        local tsy = (choice_height * choice_sy)/(font:getHeight() * n)
+
+        obj_input.tx = text_x
+        obj_input.ty = text_y
+        obj_input.tox = txt_width * 0.5
+        obj_input.toy = txt_height * 0.5
+        obj_input.tsx = tsx
+        obj_input.tsy = tsy
+        obj_input.is_printf = true
     end
 end
 

@@ -72,7 +72,7 @@ end
 
 function Button:draw()
     local sx, sy = self.sx, self.sy
-    if self.is_hoverable and self.is_overlap then
+    if (self.is_hoverable and self.is_overlap) or self.is_hovered then
         sx = sx + self.sx_dt
         sy = sy + self.sy_dt
     end

@@ -47,4 +47,10 @@ function StateManager:keypressed(key)
     end
 end
 
+function StateManager:textinput(text)
+    if self.current.textinput then
+        self.current:textinput(text)
+    end
+end
+
 return StateManager

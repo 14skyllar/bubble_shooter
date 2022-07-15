@@ -346,6 +346,7 @@ function MainMenu:load()
     self.objects.play.on_clicked = function()
         for _, obj in ipairs(self.group_main) do obj.alpha = 0 end
         self.objects.settings.alpha = 0
+        self.objects.gear.alpha = 0
         self.objects.btn_info.alpha = 0
         self.objects.scoreboard.alpha = 0
         for _, obj in ipairs(self.group_difficulty) do obj.alpha = 1 end
@@ -438,6 +439,7 @@ function MainMenu:load()
 
         for _, obj in ipairs(self.group_main) do obj.alpha = 1 end
         self.objects.settings.alpha = 1
+        self.objects.gear.alpha = 1
         self.objects.btn_info.alpha = 1
         self.objects.scoreboard.alpha = 1
         for _, obj in ipairs(self.group_settings) do obj.alpha = 0 end
