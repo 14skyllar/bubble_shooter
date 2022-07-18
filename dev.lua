@@ -6,8 +6,12 @@ local Dev = {
 
 function Dev:draw()
     if self.is_enabled then
-        love.graphics.setColor(1, 0, 0, 1)
+        love.graphics.setColor(1, 0, 0, 0.4)
         love.graphics.print("FPS: " .. love.timer.getFPS())
+
+        local w, h = love.graphics.getDimensions()
+        love.graphics.line(w * 0.5, 0, w * 0.5, h)
+        love.graphics.line(0, h * 0.5, w, h * 0.5)
     end
 end
 

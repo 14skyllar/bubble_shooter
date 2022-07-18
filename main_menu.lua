@@ -581,16 +581,14 @@ function MainMenu:show_levels(difficulty)
 
     self.difficulty = difficulty
 
-    local window_width = love.graphics.getDimensions()
-    local half_window_width = window_width * 0.5
-
+    local half_window_width = love.graphics.getWidth() * 0.5
     local txt_obj_id = "txt_" .. difficulty
     local image = self.images["text_" .. difficulty]
     local txt_diff_width, txt_diff_height = image:getDimensions()
     self.objects[txt_obj_id] = Button({
         image = image,
         x = half_window_width,
-        y = self.objects.box.y - self.objects.box.oy * 0.5,
+        y = self.objects.box.y - self.objects.box.oy * 0.5 - 32,
         sx = 0.75, sy = 0.75,
         ox = txt_diff_width * 0.5, oy = txt_diff_height * 0.5,
         is_clickable = false, is_hoverable = false,
@@ -598,20 +596,11 @@ function MainMenu:show_levels(difficulty)
     })
 
     local box = self.objects.box
-    local bx = box.pos.x
     local txt_obj = self.objects[txt_obj_id]
-    local by = txt_obj.y
     local image_star = self.images["star_" .. difficulty]
     local image_locked_star = self.images["locked_star_" .. difficulty]
     local star_width, star_height = image_star:getDimensions()
-    local ix, iy = 1, 1
     local progress = UserData.data.progress[difficulty]
-    local limit = 5
-    local scale = 1.25
-    local gap_x = star_width * scale
-    local gap_y = star_height * scale
-    bx = bx + gap_x * 0.5
-    by = by + gap_y * 0.5
 
     local text_colors = {
         easy = {88/255, 1, 0},
@@ -625,14 +614,27 @@ function MainMenu:show_levels(difficulty)
         self.objects[txt_obj_id],
     }
 
+    local scale = 1.25
+    local limit = 5
+    local gap_x = star_width * scale * 0.25
+    local gap_y = star_height * scale * 0.25
+    local half_cols = math.floor(limit * 0.5)
+
+    local bx = box.pos.x + box.half_size.x
+    bx = bx - ((half_cols * star_width * scale) + (gap_x * half_cols))
+
+    local by = txt_obj.y
+    by = by + star_height * scale
+
+    local ix, iy = 0, 0
     for i = 1, progress.total do
-        local star_x = bx + star_width + gap_x * (ix - 1)
-        local star_y = by + star_height + gap_y * (iy - 1)
+        local star_x = bx + star_width * scale * ix + gap_x * ix
+        local star_y = by + star_height * scale * iy + gap_y * iy
 
         ix = ix + 1
         if (i % limit) == 0 then
             iy = iy + 1
-            ix = 1
+            ix = 0
         end
 
         local is_unlocked = i <= progress.current
@@ -643,7 +645,8 @@ function MainMenu:show_levels(difficulty)
             image = is_unlocked and image_star or image_locked_star,
             x = star_x, y = star_y,
             sx = scale, sy = scale,
-            ox = star_width * 0.5, oy = star_height * 0.5,
+            ox = star_width * 0.5,
+            oy = star_height * 0.5,
             sx_dt = 0.25, sy_dt = 0.25,
             alpha = 0,
             is_hoverable = is_unlocked, is_clickable = is_unlocked,

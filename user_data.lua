@@ -48,6 +48,12 @@ function UserData:reset_levels()
     progress.medium.current = 0
     progress.hard.current = 0
     print("levels reset")
+
+    local score = UserData.data.scores
+    score.easy.current = 0
+    score.medium.current = 0
+    score.hard.current = 0
+    print("scores reset")
 end
 
 return UserData
