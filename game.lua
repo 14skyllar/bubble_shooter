@@ -624,14 +624,14 @@ function Game:create_bubbles(border_height, border_scale)
     end
 
     -- compress initial bubbles
-    for _, bubble in ipairs(self.bubbles) do
-        bubble.vy = -bubble.within_rad
-        bubble.y = bubble.y + bubble.vy * love.timer.getDelta()
-        for _, border in ipairs(self.border) do
-            bubble:check_collision(border, true)
-        end
-        bubble.vy = 0
-    end
+    -- for _, bubble in ipairs(self.bubbles) do
+    --     bubble.vy = -bubble.within_rad
+    --     bubble.y = bubble.y + bubble.vy * love.timer.getDelta()
+    --     for _, border in ipairs(self.border) do
+    --         bubble:check_collision(border, true)
+    --     end
+    --     bubble.vy = 0
+    -- end
 
     --check for total y the bubbles will reach after compressing
     local lowest_y = 0
