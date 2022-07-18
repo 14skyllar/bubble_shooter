@@ -363,7 +363,6 @@ function MainMenu:load()
         self.objects.txt_settings,
         self.objects.txt_volume,
         self.objects.slider,
-        self.objects.reset_levels,
         self.objects.back,
     }
 
@@ -432,7 +431,6 @@ function MainMenu:load()
         self.objects.scoreboard.is_clickable = false
         self.objects.scoreboard.is_hoverable = false
         self.objects.back.is_clickable = true
-        self.objects.reset_levels.is_clickable = true
         self.objects.slider.is_clickable = true
     end
 
@@ -459,7 +457,6 @@ function MainMenu:load()
     end
 
     self.objects.scoreboard.on_clicked = function()
-        self.objects.reset_levels.orig_y = self.objects.reset_levels.y
         self.objects.reset_levels:update_y(prev_box.y + prev_box.oy * 1.5)
 
         for _, obj in ipairs(self.group_main) do obj.alpha = 0 end
@@ -481,8 +478,6 @@ function MainMenu:load()
     end
 
     self.objects.back.on_clicked = function()
-        self.objects.reset_levels:update_y(self.objects.reset_levels.y)
-
         local diff_back = self.objects.txt_difficulty.alpha == 0 and self.objects.slider.alpha == 0
 
         for _, obj in ipairs(self.group_main) do obj.alpha = 1 end
