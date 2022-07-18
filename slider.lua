@@ -3,27 +3,35 @@ local Slider = class({
 })
 
 function Slider:new(opts)
+    self.knob_image = opts.knob_image
+    self.bg_image = opts.bg_image
+
+    self.sx = opts.sx or 1
+    self.sy = opts.sy or 1
+    self.ox = opts.ox or 0
+    self.oy = opts.oy or 0
+
     self.current_value = opts.current_value
     self.max_value = opts.max_value
     self.x, self.y = opts.x, opts.y
     self.width, self.height = opts.width, opts.height
-    self.knob_radius = opts.knob_radius
+    self.knob_radius = self.knob_image:getHeight() * 0.5
 
     self.alpha = opts.alpha or 1
     self.max_alpha = opts.max_alpha or 1
     self.fade = 0
     self.fade_amount = opts.fade_amount or 1
-    self.bg_color = opts.bg_color or {0, 0, 0}
-    self.line_color = opts.line_color or {1, 1, 1}
-    self.knob_color = opts.knob_color or {1, 1, 1}
     self.is_knob_hovered = false
 
     self.mouse = vec2()
     self.hold = false
 
     local value = self.current_value/self.max_value
-    local kx = self.x + value * self.width
-    local ky = self.y + self.height * 0.5
+    local bg_width = self.bg_image:getWidth()
+    self.base_kx = self.x - self.ox * 0.25
+    self.kw = bg_width * self.sx * 0.7
+    local kx = self.base_kx + value * self.kw
+    local ky = self.y
     self.knob_pos = vec2(kx, ky)
 end
 
@@ -43,7 +51,7 @@ function Slider:update(dt)
     self.is_knob_hovered = intersect.point_circle_overlap(self.mouse, self.knob_pos, self.knob_radius)
 
     if self.hold then
-        local new_value = mx/(self.x + self.width)
+        local new_value = mx/(self.base_kx + self.kw)
         self.current_value = mathx.clamp(new_value, 0, self.max_value)
 
         if self.on_dragged then
@@ -52,28 +60,41 @@ function Slider:update(dt)
     end
 
     local value = self.current_value/self.max_value
-    local kx = self.x + value * self.width
-    self.knob_pos.x = kx
+    self.knob_pos.x = self.base_kx + value * self.kw
 end
 
 function Slider:draw()
-    local r, g, b = unpack(self.bg_color)
-    love.graphics.setColor(r, g, b, self.alpha)
-    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
-
     local value = self.current_value/self.max_value
-    local lr, lg, lb = unpack(self.line_color)
-    love.graphics.setColor(lr, lg, lb, self.alpha)
-    love.graphics.rectangle("fill", self.x, self.y, value * self.width, self.height)
+    local w = value * self.kw
 
-    local kr, kg, kb = unpack(self.knob_color)
+    love.graphics.setColor(72/255, 181/255, 175/255, self.alpha)
+    love.graphics.rectangle(
+        "fill",
+        self.base_kx,
+        self.y - self.height * 0.5,
+        w,
+        self.height,
+        16
+    )
 
-    love.graphics.setColor(kr, kg, kb, self.alpha)
-    local rad = self.knob_radius
+    love.graphics.draw(self.bg_image, self.x, self.y, 0, self.sx, self.sy, self.ox, self.oy)
+
+    local knob_scale = 1
     if self.is_knob_hovered then
-        rad = rad + 4
+        knob_scale = knob_scale + 0.1
     end
-    love.graphics.circle("fill", self.knob_pos.x, self.knob_pos.y, rad)
+
+    love.graphics.setColor(1, 1, 1, self.alpha)
+    local knob_width, knob_height = self.knob_image:getDimensions()
+    love.graphics.draw(
+        self.knob_image,
+        self.knob_pos.x,
+        self.knob_pos.y,
+        0,
+        knob_scale, knob_scale,
+        knob_width * 0.5,
+        knob_height * 0.5
+    )
 end
 
 function Slider:mousepressed(mx, my, mb)

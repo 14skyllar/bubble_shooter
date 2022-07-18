@@ -250,7 +250,7 @@ function MainMenu:load()
         local _, txt_height = txt_image:getDimensions()
 
         local score_data = UserData.data.scores[id]
-        local text = string.format("%d/%d", score_data.current, score_data.total)
+        local text = tostring(score_data.current)
 
         local pad = Resources.font:getWidth("   ")
         self.objects["txt_" .. id .. "_score"] = Button({
@@ -281,17 +281,23 @@ function MainMenu:load()
         alpha = 0,
     })
 
+    local sbg_width, sbg_height = self.images.slider_bg:getDimensions()
+
     self.objects.slider = Slider({
+        knob_image = self.images.knob,
+
+        bg_image = self.images.slider_bg,
+        x = self.objects.box.x,
+        y = self.objects.box.y + txt_settings_height * 0.5,
+        sx = 0.5, sy = 0.5,
+        ox = sbg_width * 0.5, oy = sbg_height * 0.5,
+
         current_value = UserData.data.main_volume,
         max_value = 1,
-        x = self.objects.txt_volume.x,
-        y = self.objects.txt_volume.y + txt_settings_height * self.objects.txt_volume.sy,
         width = box_width * self.objects.box.sx - 72,
-        height = 24, knob_radius = 16, alpha = 0,
+        height = 24,
+        alpha = 0,
         is_clickable = false,
-        bg_color = {0, 0, 1},
-        line_color = {43/255, 117/255, 222/255},
-        knob_color = {1, 1, 1},
     })
 
     local reset_levels_width, reset_levels_height = self.images.button_reset_levels:getDimensions()
