@@ -71,6 +71,9 @@ function Game:new(difficulty, level, hearts)
     self.game_timer = game_timers[difficulty]
     self.score = 0
     self.last_score_threshold = 0
+    self.last_score_threshold_p = 0
+    self.powerups = false
+    self.powerups_timer = 0
     assert(self.rows ~= nil and self.rows > 0)
 
     local diff = string.upper(difficulty:sub(1, 1)) .. difficulty:sub(2)
@@ -89,7 +92,7 @@ function Game:new(difficulty, level, hearts)
         "txt_ready_go",
         "bg_question", "bg_box", "bg_win_lose", "text_lose", "text_win",
         "text_level_cleared", "btn_sound", "btn_bgm",
-        "btn_resume", "btn_restart", "btn_main_menu",
+        "btn_resume", "btn_restart", "btn_main_menu", "powerup",
     }
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
@@ -294,6 +297,7 @@ function Game:load()
 end
 
 function Game:show_question()
+    if self.powerups then return end
     local padding = 64
     local window_width, window_height = love.graphics.getDimensions()
     local half_window_width = window_width * 0.5
@@ -672,6 +676,25 @@ function Game:after_shoot()
     while #stack > 0 do
         local current = table.remove(stack, 1)
         local within_radius = current:get_within_radius(self.bubbles)
+        if type(within_radius) == "boolean" then
+            self.sources.snd_bubble_pop:play()
+            self.sources.snd_bubble_pop:setLooping(false)
+            self.powerups = true
+
+            local t = timer(pop_dur,
+                function(progress)
+                    self.objects.powerup.alpha = 1 - progress
+                    ammo.alpha = 1 - progress
+                end,
+                function()
+                    self.objects.powerup.is_dead = true
+                    ammo.is_dead = true
+                end
+            )
+            table.insert(self.pop_timers, t)
+            break
+        end
+
         for _, bubble in ipairs(within_radius) do
             if not found[bubble] then
                 found[bubble] = bubble
@@ -684,7 +707,6 @@ function Game:after_shoot()
     if matches >= 3 then
         self.sources.snd_bubble_pop:play()
         self.sources.snd_bubble_pop:setLooping(false)
-
         self.has_match = true
 
         for k in pairs(found) do
@@ -724,6 +746,11 @@ function Game:after_shoot()
             self.last_score_threshold = self.last_score_threshold + 10
             self.game_timer = self.game_timer + 60
         end
+
+        if (self.score - self.last_score_threshold_p) >= 15 then
+            self.last_score_threshold_p = self.last_score_threshold_p + 15
+            self:show_powerup()
+        end
     end
 
     if ammo then
@@ -760,6 +787,7 @@ function Game:reload()
         }
         table.insert(present_bubbles, data)
     end
+    if #present_bubbles == 0 then return end
     local new_data = tablex.pick_random(present_bubbles)
     local image = new_data.image
     local width, height = image:getDimensions()
@@ -954,6 +982,23 @@ function Game:game_over(has_won)
     end
 end
 
+function Game:show_powerup()
+    local powerup_width, powerup_height = self.images.powerup:getDimensions()
+    local scale = 0.15
+    local half_width = powerup_width * scale * 0.5
+    local half_height = powerup_height * scale * 0.5
+    local x = love.math.random(half_width, love.graphics.getWidth() - half_width)
+
+    self.objects.powerup = Bubble({
+        image = self.images.powerup,
+        x = x, y = -half_height,
+        sx = scale, sy = scale,
+        ox = powerup_width * 0.5, oy = powerup_height * 0.5,
+        color_name = "powerup",
+    })
+    table.insert(self.bubbles, self.objects.powerup)
+end
+
 function Game:update_save_data()
     local data = UserData.data.progress[self.difficulty]
     if data.current ~= self.level then return end
@@ -1124,6 +1169,22 @@ function Game:update(dt)
     if self.proceed_timer then self.proceed_timer:update(dt) end
 
     if self.is_game_over then return end
+
+    if self.powerups then
+        self.powerups_timer = self.powerups_timer + dt
+        if self.powerups_timer >= 10 then
+            self.powerups_timer = 0
+            self.powerups = false
+        else
+            self.remaining_shots = 3
+        end
+    end
+
+    local p = self.objects.powerup
+    if p then
+        p.vy = 64
+        p.r = p.r + dt
+    end
 
     if not self.is_paused then
         self.game_timer = self.game_timer - dt
@@ -1380,6 +1441,8 @@ function Game:keypressed(key)
         self:open_settings()
     elseif key == "w" then
         self:game_over(true)
+    elseif key == "u" then
+        self:show_powerup()
     end
 
     local obj_input = self.waiting_for_input

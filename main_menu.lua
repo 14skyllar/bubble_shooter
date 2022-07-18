@@ -620,11 +620,17 @@ function MainMenu:show_levels(difficulty)
     local gap_y = star_height * scale * 0.25
     local half_cols = math.floor(limit * 0.5)
 
+    local spacings = {
+        easy = 1.5,
+        medium = 1.5,
+        hard = 1,
+    }
+
     local bx = box.pos.x + box.half_size.x
     bx = bx - ((half_cols * star_width * scale) + (gap_x * half_cols))
 
     local by = txt_obj.y
-    by = by + star_height * scale
+    by = by + star_height * scale * spacings[self.difficulty]
 
     local ix, iy = 0, 0
     for i = 1, progress.total do

@@ -49,15 +49,17 @@ end
 
 function Bubble:check_match(other)
     if other == self then return false end
-    return self.color_name == other.color_name
+    return self.color_name == other.color_name, other.color_name == "powerup"
 end
 
 function Bubble:get_within_radius(bubbles)
     local within = {}
     for _, other in ipairs(bubbles) do
         if self ~= other then
-            local is_same = self:check_match(other)
-            if is_same then
+            local is_same, is_powerup = self:check_match(other)
+            if is_powerup then
+                return true
+            elseif is_same then
                 local this_pos = vec2(self.x, self.y)
                 local other_pos = vec2(other.x, other.y)
                 local distance = this_pos:distance(other_pos)
@@ -90,6 +92,10 @@ function Bubble:update(dt)
     local threshold = self.rad * 2
     self.is_dead = (self.x < -threshold) or (self.x > window_width + threshold) or
         (self.y < -threshold) or (self.y > window_height + threshold)
+
+    if self.y >= love.graphics.getHeight() * 1.25 then
+        self.is_dead = true
+    end
 end
 
 function Bubble:draw()

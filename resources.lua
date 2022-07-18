@@ -28,7 +28,7 @@ Resources.images = {
         "btn_resume", "btn_restart", "btn_main_menu",
     },
 
-    Easy = {"heart", "label", "settings", "shooter", "bg_question", "bg_win_lose", "text_win"},
+    Easy = {"heart", "label", "settings", "shooter", "bg_question", "bg_win_lose", "text_win", "powerup"},
     Medium = {},
     Hard = {},
 
