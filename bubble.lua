@@ -20,11 +20,11 @@ function Bubble:new(opts)
     self.ox = opts.ox or 0
     self.oy = opts.oy or 0
     self.main_oy = opts.main_oy or self.oy
-    self.rad = width * self.sx * 0.25
+    self.rad = width * self.sx * 2.5
     self.alpha = opts.alpha or 1
     self.vx, self.vy = 0, 0
     self.is_hit = false
-    self.within_rad = width * 2 * 1.5
+    self.within_rad = self.rad * self.sx * 2 * 1.5
     self.color_name = opts.color_name
 end
 

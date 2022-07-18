@@ -31,6 +31,8 @@ local push_back = {
 }
 
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
+local bubble_scale = 0.2
+local bubble_size = 240
 
 local fade_in_sec = 2
 local fade_out_sec = 1
@@ -68,6 +70,7 @@ function Game:new(difficulty, level, hearts)
     self.rotation = 0
     self.game_timer = game_timers[difficulty]
     self.score = 0
+    self.last_score_threshold = 0
     assert(self.rows ~= nil and self.rows > 0)
 
     local diff = string.upper(difficulty:sub(1, 1)) .. difficulty:sub(2)
@@ -534,7 +537,6 @@ end
 function Game:create_bubbles(border_height, border_scale)
     local window_width = love.graphics.getWidth()
     local half_window_width = window_width * 0.5
-    local bubble_scale = 2
 
     if self.difficulty == "easy" then
         for i = 0, self.rows - 1 do
@@ -545,7 +547,7 @@ function Game:create_bubbles(border_height, border_scale)
                 local image = self.images_bubbles[key]
                 local width, height = image:getDimensions()
                 local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
-                local y = self.border_y + (border_height * border_scale) + height * 0.5
+                local y = self.border_y + (border_height * border_scale) + height * bubble_scale * 0.5
                 x = x + (width * bubble_scale * j)
                 y = y + (height * bubble_scale * i)
 
@@ -562,7 +564,7 @@ function Game:create_bubbles(border_height, border_scale)
         end
 
     elseif self.difficulty == "medium" then
-        local cols = math.floor(window_width/(22 * bubble_scale))
+        local cols = math.floor(window_width/(bubble_size * bubble_scale))
         for i = 0, self.rows - 1 do
             for j = 0, cols - 1 do
                 local key = tablex.pick_random(self.bubbles_key)
@@ -570,7 +572,7 @@ function Game:create_bubbles(border_height, border_scale)
                 local image = self.images_bubbles[key]
                 local width, height = image:getDimensions()
                 local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
-                local y = self.border_y + (border_height * border_scale) + height * 0.5
+                local y = self.border_y + (border_height * border_scale) + height * bubble_scale * 0.5
                 x = x + (width * bubble_scale * j)
                 y = y + (height * bubble_scale * i)
 
@@ -596,7 +598,7 @@ function Game:create_bubbles(border_height, border_scale)
                 local image = self.images_bubbles[key]
                 local width, height = image:getDimensions()
                 local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
-                local y = self.border_y + (border_height * border_scale) + height * 0.5
+                local y = self.border_y + (border_height * border_scale) + height * bubble_scale * 0.5
                 x = x + (width * bubble_scale * j)
                 y = y + (height * bubble_scale * i)
 
@@ -619,7 +621,7 @@ function Game:create_bubbles(border_height, border_scale)
 
     -- compress initial bubbles
     for _, bubble in ipairs(self.bubbles) do
-        bubble.vy = -8
+        bubble.vy = -bubble.within_rad
         bubble.y = bubble.y + bubble.vy * love.timer.getDelta()
         for _, border in ipairs(self.border) do
             bubble:check_collision(border, true)
@@ -717,6 +719,11 @@ function Game:after_shoot()
             x = ammo.x, y = ammo.y,
             alpha = 1,
         }
+
+        if (self.score - self.last_score_threshold) >= 10 then
+            self.last_score_threshold = self.last_score_threshold + 10
+            self.game_timer = self.game_timer + 60
+        end
     end
 
     if ammo then
@@ -756,7 +763,6 @@ function Game:reload()
     local new_data = tablex.pick_random(present_bubbles)
     local image = new_data.image
     local width, height = image:getDimensions()
-    local bubble_scale = 2
     local shooter = self.objects.shooter
 
     self.objects.ammo = Bubble({
@@ -1158,8 +1164,8 @@ function Game:update(dt)
         obj_input.is_hovered = true
     end
 
-    if self.start then
-        local shooter = self.objects.shooter
+    local shooter = self.objects.shooter
+    if self.start and shooter then
         local mx, my = love.mouse.getPosition()
         local r = Utils.get_angle(shooter, mx, my)
         self.rotation = r
@@ -1240,7 +1246,6 @@ function Game:update(dt)
     end
 
     if lowest_bubble then
-        local shooter = self.objects.shooter
         local threshold = shooter.y - shooter.oy * shooter.sy + 32
         if lowest_y + lowest_bubble.rad * lowest_bubble.sy >= threshold then
             local obj_heart = self.objects["heart_" .. self.hearts]
@@ -1373,6 +1378,8 @@ function Game:keypressed(key)
         for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0 end
     elseif key == "p" then
         self:open_settings()
+    elseif key == "w" then
+        self:game_over(true)
     end
 
     local obj_input = self.waiting_for_input
