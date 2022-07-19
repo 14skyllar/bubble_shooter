@@ -64,7 +64,6 @@ function Game:new(difficulty, level, hearts)
     self.is_question = false
     self.is_targeting = false
     self.can_shoot = false
-    self.can_proceed = false
     self.target_path = {}
     self.rows = rows[difficulty][level]
     self.rotation = 0
@@ -93,6 +92,7 @@ function Game:new(difficulty, level, hearts)
         "bg_question", "bg_box", "bg_win_lose", "text_lose", "text_win",
         "text_level_cleared", "btn_sound", "btn_bgm",
         "btn_resume", "btn_restart", "btn_main_menu", "powerup",
+        "btn_next", "btn_retry", "btn_stages",
     }
 
     for i = 1, self.max_hearts do table.insert(self.objects_order, "heart_" .. i) end
@@ -881,7 +881,7 @@ function Game:game_over(has_won)
 
     local bg_width, bg_height = self.images_common.bg_box:getDimensions()
     local bg_sx = (window_width - 64)/bg_width
-    local bg_sy = (half_window_height)/bg_height
+    local bg_sy = (window_height * 0.6)/bg_height
 
     self.objects.bg_box = Button({
         image = self.images_common.bg_box,
@@ -895,7 +895,7 @@ function Game:game_over(has_won)
     local box_width, box_height = self.images.bg_win_lose:getDimensions()
     self.objects.bg_win_lose = Button({
         image = self.images.bg_win_lose,
-        x = half_window_width, y = half_window_height + 48,
+        x = half_window_width, y = half_window_height,
         sx = 1, sy = 1,
         ox = box_width * 0.5, oy = box_height * 0.5,
         is_hoverable = false, is_clickable = false,
@@ -941,6 +941,67 @@ function Game:game_over(has_won)
         toy = font:getHeight() * 0.25,
     })
 
+    local btn_scale = 0.25
+    local btn_retry_width, btn_retry_height = self.images_common.btn_retry:getDimensions()
+    local btn_y = bg_win_lose.y + box_height * 0.75
+    self.objects.btn_retry = Button({
+        image = self.images_common.btn_retry,
+        x = bg_win_lose.x,
+        y = btn_y,
+        sx = btn_scale, sy = btn_scale,
+        ox = btn_retry_width * 0.5, oy = btn_retry_height * 0.5,
+        is_hoverable = true, is_clickable = true,
+    })
+    self.objects.btn_retry.on_clicked = function()
+        local next_state = require("game")
+        StateManager:switch(next_state, self.difficulty, self.level)
+    end
+
+    local btn_stages_width, btn_stages_height = self.images_common.btn_stages:getDimensions()
+    self.objects.btn_stages = Button({
+        image = self.images_common.btn_stages,
+        x = self.objects.btn_retry.x - btn_retry_width * btn_scale * 1.25,
+        y = btn_y,
+        sx = btn_scale, sy = btn_scale,
+        ox = btn_stages_width * 0.5, oy = btn_stages_height * 0.5,
+        is_hoverable = true, is_clickable = true,
+    })
+    self.objects.btn_stages.on_clicked = function()
+        local next_state = require("main_menu")
+        StateManager:switch(next_state, self.difficulty)
+    end
+
+    if has_won then
+        local btn_next_width, btn_next_height = self.images_common.btn_next:getDimensions()
+        self.objects.btn_next = Button({
+            image = self.images_common.btn_next,
+            x = self.objects.btn_retry.x + btn_retry_width * btn_scale * 1.25,
+            y = btn_y,
+            sx = btn_scale, sy = btn_scale,
+            ox = btn_next_width * 0.5, oy = btn_next_height * 0.5,
+            is_hoverable = true, is_clickable = true,
+        })
+        self.objects.btn_next.on_clicked = function()
+            local next_state = require("game")
+            self.level = self.level + 1
+            if self.level > UserData.data.progress[self.difficulty].total then
+                if self.difficulty == "easy" then
+                    self.difficulty = "medium"
+                elseif self.difficulty == "medium" then
+                    self.difficulty = "hard"
+                end
+                self.level = UserData.data.progress[self.difficulty].current
+            end
+            StateManager:switch(next_state, self.difficulty, self.level)
+        end
+    end
+
+    self.win_lose_buttons = {
+        self.objects.btn_next,
+        self.objects.btn_retry,
+        self.objects.btn_stages,
+    }
+
     local star_width, star_height = star_image:getDimensions()
     local star_sx = has_won and 0.5 or 0.6
     local star_sy = has_won and 0.5 or 0.6
@@ -971,11 +1032,6 @@ function Game:game_over(has_won)
             is_hoverable = false, is_clickable = false,
         })
     end
-
-    self.proceed_timer = timer(proceed_delay, nil, function()
-            self.can_proceed = true
-            self.proceed_timer = nil
-        end)
 
     if has_won then
         self:update_save_data()
@@ -1166,9 +1222,13 @@ end
 
 function Game:update(dt)
     if self.bgm_timer then self.bgm_timer:update(dt) end
-    if self.proceed_timer then self.proceed_timer:update(dt) end
 
-    if self.is_game_over then return end
+    if self.is_game_over then
+        for _, btn in ipairs(self.win_lose_buttons) do
+            btn:update(dt)
+        end
+        return
+    end
 
     if self.powerups then
         self.powerups_timer = self.powerups_timer + dt
@@ -1394,12 +1454,6 @@ function Game:mousepressed(mx, my, mb)
 end
 
 function Game:mousereleased(mx, my, mb)
-    if self.can_proceed then
-        local next_state = require("main_menu")
-        StateManager:switch(next_state, self.difficulty)
-        return
-    end
-
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn and btn.was_clicked then
