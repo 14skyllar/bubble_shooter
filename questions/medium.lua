@@ -20,7 +20,7 @@ local medium = {
 	{
 		question = "What is the number of neutron of the element Mercury if its atomic number is two (80) and its atomic mass is four (201)? ",
 		answer = "b",
-		info = "Did you know that the modern element symbol for mercury is Hg, which is the symbol for another name for mercury: hydrargyrum. Hydrargyrum comes from Greek words for "water-silver" (hydr- means water, argyros means silver)?",
+		info = "Did you know that the modern element symbol for mercury is Hg, which is the symbol for another name for mercury: hydrargyrum. Hydrargyrum comes from Greek words for 'water-silver' (hydr- means water, argyros means silver)?",
 		a = "131",
 		b = "121",
 		c = "141",
@@ -52,7 +52,7 @@ local medium = {
 		b = "52",
 		c = "57",
 		d = "54",
-	}, 
+	},
 	{
 		question = "Which of the following states a false information on what will happen if there is TOO MUCH carbon dioxide (CO2) in the atmosphere?",
 		answer = "b",
