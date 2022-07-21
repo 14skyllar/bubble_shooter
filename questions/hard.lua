@@ -433,4 +433,4 @@ local hard = {
 	},
 }
 
-return hard	
+return hard

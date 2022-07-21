@@ -12,15 +12,15 @@ local medium = {
 		question = "What are the Number of Protons and Number of Electrons of the Element Francium?",
 		answer = "d",
 		info = "Did you know that the discovery of the element francium completed humankind’s discoveries of naturally occurring elements?",
-		a = "The Number of Protons is 18 and the Number of Electrons is also 18",
-		b = "The Number of Protons is 40 and the Number of Electrons is 50",
-		c = "The Number of Protons is 65 and the Number of Electrons is 87",
-		d = "The Number of Protons is 87 and the Number of Electrons is also 87",
+		a = "The No. of Protons and Electrons is 18",
+		b = "The No. of Protons is 40 and the No. of Electrons is 50",
+		c = "The No. of Protons is 65 and the No. of Electrons is 87",
+		d = "The No. of Protons and Electrons is 87",
 	},
 	{
 		question = "What is the number of neutron of the element Mercury if its atomic number is two (80) and its atomic mass is four (201)? ",
 		answer = "b",
-		info = "Did you know that the modern element symbol for mercury is Hg, which is the symbol for another name for mercury: hydrargyrum. Hydrargyrum comes from Greek words for 'water-silver' (hydr- means water, argyros means silver)?",
+		info = "Did you know that the modern element symbol for mercury is Hg, which is the symbol for another name for mercury: hydrargyrum. Hydrargyrum comes from Greek words for "water-silver" (hydr- means water, argyros means silver)?",
 		a = "131",
 		b = "121",
 		c = "141",
@@ -52,15 +52,15 @@ local medium = {
 		b = "52",
 		c = "57",
 		d = "54",
-	},
+	}, 
 	{
 		question = "Which of the following states a false information on what will happen if there is TOO MUCH carbon dioxide (CO2) in the atmosphere?",
 		answer = "b",
 		info = "Did you know that Carbon dioxide is used to produce carbonated soft drinks and sparkling water, such as Coca-Cola? When CO2 is used to create such beverages, sometimes it can leave behind the acidic or sour taste that is experienced if one inhales the gas in high concentrations. This is an important part of the taste of some drinks and counterbalances the sweetness in some.",
-		a = "It will cause Extreme weather, food supply disruptions, and increased wildfires",
-		b = "It will serves as a good help and support for the Environment by giving enough heat and sunlight",
-		c = "It will cause climate change by trapping heat, and they also contribute to respiratory disease from smog and air pollution.",
-		d = "Carbon dioxide (CO2) becomes a poisonous gas when there is too much of it in the air you breathe.",
+		a = "Extreme weather, food supply disruptions, and increased wildfires.",
+		b = "Serves as a good help and support for the Environment by giving enough heat and sunlight.",
+		c = "Contribute to respiratory disease from smog and air pollution.",
+		d = "Carbon dioxide (CO2) becomes a poisonous gas.",
 	},
 	{
 		question = "What elements are present in a Hydrochloric Acid?",
@@ -120,127 +120,127 @@ local medium = {
 		question = "The number of Protons and Electrons of the Krypton is 18.",
 		answer = false,
 		info = "Krypton (Kr), chemical element, a rare gas of Group 18 (noble gases) of the periodic table, which forms relatively few chemical compounds.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "If Sulfur has an atomic number of 16 and a Mass number of 32, its neutrons number would be 61.",
 		answer = false,
 		info = "Sulfur (S), also spelled sulphur, nonmetallic chemical element belonging to the oxygen group (Group 16 [VIa] of the periodic table), one of the most reactive of the elements.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The Symbol for the Element Thulium is “Th”.",
 		answer = false,
 		info = "Thulium is a moderately hard, silvery white metal that is stable in air but can easily be dissolved in diluted acids—except hydrofluoric acid (HF), in which an insoluble trifluoride (TmF3) layer forms on the surface of the metal, impeding further chemical reaction.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The number of electron of Mg is 12.",
 		answer = true,
 		info = "Magnesium’s compounds are widely used in construction and medicine, and magnesium is one of the elements essential to all cellular life.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The number of neutron of the element Helium is 2 with an atomic number of 2 and atomic mass of 6.",
 		answer = false,
 		info = "Helium’s boiling and freezing points are lower than those of any other known substance. Helium is the only element that cannot be solidified by sufficient cooling at normal atmospheric pressure.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "We determine the proton of a particular element with the use of atomic number.",
 		answer = true,
 		info = "When the number of protons in a nucleus equals the number of electrons orbiting the nucleus, the atom is electrically neutral.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The name of the element with a symbol of Mn is Manganise.",
 		answer = false,
 		info = "Manganese is second only to iron among the transition elements in its abundance in Earth’s crust; it is roughly similar to iron in its physical and chemical properties but is harder and more brittle.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The atomic number of Magnesium is 12.",
 		answer = true,
 		info = "The name magnesium comes from Magnesia, a district of Thessaly (Greece) where the mineral magnesia alba was first found.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Bromine has an atomic number of 35 and a mass number of 75.",
 		answer = false,
 		info = "Bromine (Br), chemical element, a deep red noxious liquid, and a member of the halogen elements, or Group 17 (Group VIIa) of the periodic table.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Copper has a mass number of 64.",
 		answer = true,
 		info = "Native copper is found at many locations as a primary mineral in basaltic lavas and also as reduced from copper compounds, such as sulfides, arsenides, chlorides, and carbonates.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Tin has a mass number of 119 and an atomic number 50.",
 		answer = true,
 		info = "Tin is widely used for plating steel cans used as food containers, in metals used for bearings, and in solder.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Lithium (Li) is part of the Alkali Metals group in the Periodic Table.",
 		answer = true,
 		info = "The alkali metals are so called because reaction with water forms alkalies (i.e., strong bases capable of neutralizing acids).",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Boron is part of the Metalloids along with the Aluminium in the periodic Table.",
 		answer = true,
 		info = "Metalloid, in chemistry, an imprecise term used to describe a chemical element that forms a simple substance having properties intermediate between those of a typical metal and a typical nonmetal.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Calcium has an atomic number of 20 and a mass number of 45.",
 		answer = false,
 		info = "Calcium is the most abundant metallic element in the human body and the fifth most abundant element in Earth’s crust.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Iron has an atomic number of 26 at the same time has a protons and electrons of 26.",
 		answer = true,
 		info = "Iron, which is the chief constituent of Earth’s core, is the most abundant element in Earth as a whole (about 35 percent) and is relatively plentiful in the Sun and other stars.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The Symbol Po has a name of Polonium.",
 		answer = true,
 		info = "Polonium is extremely rare, even in pitchblende: 1,000 tons of the ore must be processed to obtain 40 milligrams of polonium.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The number of neutrons of the element Radon is 136.",
 		answer = true,
 		info = "Radon is rare in nature because its isotopes are all short-lived and because its source, radium, is a scarce element.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The Elements Curium and Uranium are part of the group Actinides in the Periodic Table.",
 		answer = true,
 		info = "Actinides are transition elements, so their atoms have similar configurations and similar physical and chemical behaviour; the most usual valences are 3 and 4.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "The Element Silver has an atomic number of 49.",
 		answer = false,
 		info = "Silver has the highest known electrical and thermal conductivity of all metals and is used in fabricating printed electrical circuits and as a vapour-deposited coating for electronic conductors.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Lanthanum (La) element has a neutron number of 82.",
 		answer = true,
 		info = "Lanthanum occurs in the rare-earth minerals monazite and bastnasite. It is as abundant as cobalt in Earth’s upper continental crust.",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "Element Mercury has a mass number of 205.",
 		answer = false,
 		info = "The name mercury originated in 6th-century alchemy, in which the symbol of the planet was used to represent the metal; the chemical symbol Hg derives from the Latin hydrargyrum, “liquid silver.”",
-        true_or_false = true
+        true_of_false = true
 	},
 	{
 		question = "What is the number of neutron of Ar?",

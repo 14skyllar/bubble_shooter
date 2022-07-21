@@ -466,7 +466,22 @@ function Game:check_answer(choice_obj)
         obj.is_clickable = false
     end
 
-    if string.lower(choice_obj.value) == string.lower(self.current_question.answer) then
+    local user_answer = string.lower(choice_obj.value)
+    local is_correct = false
+
+    if type(self.current_question.answer) == "string" then
+        is_correct = user_answer == string.lower(self.current_question.answer)
+    elseif type(self.current_question.answer) == "table" then
+        for _, answer in ipairs(self.current_question.answer) do
+            answer = string.lower(answer)
+            if user_answer == answer then
+                is_correct = true
+                break
+            end
+        end
+    end
+
+    if is_correct then
         print("correct")
         self:correct_answer()
         choice_obj.text_color = {0, 1, 0}
