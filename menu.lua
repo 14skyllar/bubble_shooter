@@ -5,11 +5,11 @@ local StateManager = require("state_manager")
 local UserData = require("user_data")
 local Utils = require("utils")
 
-local MainMenu = class({
-    name = "MainMenu"
+local Menu = class({
+    name = "Menu"
 })
 
-function MainMenu:new(start_screen)
+function Menu:new(start_screen)
     local id = self:type()
     self.images = Utils.load_images(id)
     self.sources = Utils.load_sources(id)
@@ -33,7 +33,7 @@ function MainMenu:new(start_screen)
     self.start_screen = start_screen
 end
 
-function MainMenu:load()
+function Menu:load()
     self.sources.bgm_gameplay:play()
     self.sources.bgm_gameplay:setLooping(true)
 
@@ -610,7 +610,7 @@ function MainMenu:load()
     end
 end
 
-function MainMenu:show_levels(difficulty)
+function Menu:show_levels(difficulty)
     if self.group_stage then
         tablex.clear(self.group_stage)
         local id = "txt_" .. self.difficulty
@@ -734,7 +734,7 @@ function MainMenu:show_levels(difficulty)
     self.objects.back.is_clickable = true
 end
 
-function MainMenu:update(dt)
+function Menu:update(dt)
     local obj_gear = self.objects.gear
     obj_gear.r = obj_gear.r + dt
 
@@ -749,7 +749,7 @@ function MainMenu:update(dt)
     end
 end
 
-function MainMenu:draw()
+function Menu:draw()
     love.graphics.setColor(1, 1, 1, 1)
 
     local window_width, window_height = love.graphics.getDimensions()
@@ -770,7 +770,7 @@ function MainMenu:draw()
     end
 end
 
-function MainMenu:mousepressed(mx, my, mb)
+function Menu:mousepressed(mx, my, mb)
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn then
@@ -780,7 +780,7 @@ function MainMenu:mousepressed(mx, my, mb)
     end
 end
 
-function MainMenu:mousereleased(mx, my, mb)
+function Menu:mousereleased(mx, my, mb)
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn then
@@ -789,10 +789,10 @@ function MainMenu:mousereleased(mx, my, mb)
     end
 end
 
-function MainMenu:exit()
+function Menu:exit()
     for _, source in pairs(self.sources) do
         source:stop()
     end
 end
 
-return MainMenu
+return Menu

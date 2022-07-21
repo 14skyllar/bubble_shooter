@@ -982,7 +982,7 @@ function Game:game_over(has_won)
         is_hoverable = true, is_clickable = true,
     })
     self.objects.btn_stages.on_clicked = function()
-        local next_state = require("main_menu")
+        local next_state = require("menu")
         StateManager:switch(next_state, self.difficulty)
     end
 
@@ -1204,7 +1204,7 @@ function Game:open_settings()
     end
 
     self.objects.btn_main_menu.on_clicked = function()
-        local next_state = require("main_menu")
+        local next_state = require("menu")
         StateManager:switch(next_state, self.difficulty)
     end
 

@@ -5,7 +5,7 @@ Resources.fonts = {
 }
 
 Resources.images = {
-    MainMenu = {
+    Menu = {
         "sparkle", "background", "title", "close", "btn_info", "gear", "box",
         "box_info", "box_easy", "box_medium", "box_hard", "button_play",
         "button_quit", "button_back", "button_settings", "button_scoreboard",
@@ -44,7 +44,7 @@ for i, str in ipairs(Resources.images.Easy) do
 end
 
 Resources.sources = {
-    MainMenu = {
+    Menu = {
         {id = "bgm_gameplay", kind = "stream"},
         {id = "snd_buttons", kind = "static"},
     },
