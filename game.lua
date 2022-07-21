@@ -37,10 +37,9 @@ local bubble_size = 240
 local fade_in_sec = 2
 local fade_out_sec = 1
 local info_show_dur = 1.5
-local info_dur = 0.5
+local info_dur = 10
 local wrong_dur = 1.5
 local pop_dur = 1
-local proceed_delay = 1.5
 local bgm_delay = 2
 
 --TODO remove these
@@ -319,6 +318,7 @@ function Game:show_question()
     self.max_answer_length = most
 
     self.current_question = tablex.take_random(self.questions)
+    -- self.current_question = self.questions[#self.questions] --hard, indentification
     print("Remaining questions:", #self.questions)
 
     self.objects.bg_question = Button({
@@ -466,7 +466,7 @@ function Game:check_answer(choice_obj)
         obj.is_clickable = false
     end
 
-    if choice_obj.value == self.current_question.answer then
+    if string.lower(choice_obj.value) == string.lower(self.current_question.answer) then
         print("correct")
         self:correct_answer()
         choice_obj.text_color = {0, 1, 0}
@@ -1462,11 +1462,13 @@ function Game:mousereleased(mx, my, mb)
         end
     end
 
-    local r = Utils.get_angle(self.objects.shooter, mx, my)
-    if not (r >= MIN_ANGLE and r <= MAX_ANGLE) then
-        self.is_targeting = false
-        tablex.clear(self.target_path)
-        return
+    if self.objects.shooter then
+        local r = Utils.get_angle(self.objects.shooter, mx, my)
+        if not (r >= MIN_ANGLE and r <= MAX_ANGLE) then
+            self.is_targeting = false
+            tablex.clear(self.target_path)
+            return
+        end
     end
 
     if self.start and self.is_targeting and not self.has_match then
