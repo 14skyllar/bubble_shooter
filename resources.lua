@@ -15,7 +15,7 @@ Resources.images = {
         "text_medium_score", "text_hard_score", "text_easy", "text_medium",
         "text_hard", "star_easy", "star_medium", "star_hard",
         "locked_star_easy", "locked_star_medium", "locked_star_hard", "knob",
-        "slider_bg",
+        "slider_bg", "button_credits", "credits",
     },
 
     Game = {

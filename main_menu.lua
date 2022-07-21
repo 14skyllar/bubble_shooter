@@ -18,10 +18,11 @@ function MainMenu:new(start_screen)
     self.objects_order = {
         "title", "play", "quit", "settings", "gear", "btn_info", "scoreboard",
         "sparkle1", "sparkle2", "box", "txt_settings", "txt_volume",
-        "txt_scoreboard", "box_info", "box_easy", "box_medium", "box_hard",
-        "close", "txt_easy_score", "txt_medium_score", "txt_hard_score",
-        "txt_difficulty", "easy", "medium", "hard", "txt_easy", "txt_medium",
-        "txt_hard", "slider", "reset_levels", "back",
+        "txt_scoreboard", "box_info", "credits", "box_easy", "box_medium",
+        "box_hard", "close", "txt_easy_score", "txt_medium_score",
+        "txt_hard_score", "txt_difficulty", "easy", "medium", "hard",
+        "txt_easy", "txt_medium", "txt_hard", "slider", "reset_levels", "back",
+        "btn_credits",
     }
 
     for i = 1, UserData.data.progress.hard.total do
@@ -113,6 +114,18 @@ function MainMenu:load()
         alpha = 0,
     })
 
+    local credits_width, credits_height = self.images.credits:getDimensions()
+    local credits_sx = (window_width - 48)/credits_width
+    local credits_sy = (window_height * 0.6)/credits_height
+    self.objects.credits = Button({
+        image = self.images.credits,
+        x = half_window_width, y = half_window_height,
+        sx = credits_sx, sy = credits_sy,
+        ox = credits_width * 0.5, oy = credits_height * 0.5,
+        is_hoverable = false, is_clickable = false,
+        alpha = 0,
+    })
+
     local scoreboard_width, scoreboard_height = self.images.button_scoreboard:getDimensions()
     self.objects.scoreboard = Button({
         image = self.images.button_scoreboard,
@@ -193,9 +206,20 @@ function MainMenu:load()
     self.objects.back = Button({
         image = self.images.button_back,
         x = half_window_width,
-        y = self.objects.box.y + self.objects.box.oy * 0.5,
+        y = self.objects.box.y + self.objects.box.oy * 0.5 + 24,
         sx = 0.5, sy = 0.5,
         ox = back_width * 0.5, oy = back_height * 0.5,
+        alpha = 0,
+        on_click_sound = self.sources.snd_buttons,
+    })
+
+    local btn_credits_width, btn_credits_height = self.images.button_credits:getDimensions()
+    self.objects.btn_credits = Button({
+        image = self.images.button_credits,
+        x = half_window_width,
+        y = self.objects.back.y - back_height * 0.5 - 12,
+        sx = 0.5, sy = 0.5,
+        ox = btn_credits_width * 0.5, oy = btn_credits_height * 0.5,
         alpha = 0,
         on_click_sound = self.sources.snd_buttons,
     })
@@ -307,6 +331,7 @@ function MainMenu:load()
         sx = 0.75, sy = 0.75,
         ox = reset_levels_width * 0.5, oy = reset_levels_height * 0.5,
         alpha = 0,
+        is_clickable = false, is_hoverable = false,
         on_click_sound = self.sources.snd_buttons,
     })
 
@@ -370,6 +395,7 @@ function MainMenu:load()
         self.objects.txt_volume,
         self.objects.slider,
         self.objects.back,
+        self.objects.btn_credits,
     }
 
     self.group_scoreboard = {
@@ -483,6 +509,18 @@ function MainMenu:load()
         self.objects.close.is_clickable = true
     end
 
+    self.objects.btn_credits.on_clicked = function()
+        for _, obj in ipairs(self.group_settings) do
+            obj.alpha = 0
+            obj.is_hoverable = false
+            obj.is_clickable = false
+        end
+        self.objects.credits.alpha = 1
+        self.objects.close.alpha = 1
+        self.objects.close.is_clickable = 1
+        self.objects.close.is_hoverable = 1
+    end
+
     self.objects.back.on_clicked = function()
         local diff_back = self.objects.txt_difficulty.alpha == 0 and self.objects.slider.alpha == 0
 
@@ -533,19 +571,28 @@ function MainMenu:load()
         self.objects.scoreboard.alpha = 1
         for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 0 end
 
-        self.objects.box_info.alpha = 0
-        self.objects.play.is_clickable = true
-        self.objects.play.is_hoverable = true
-        self.objects.quit.is_clickable = true
-        self.objects.quit.is_hoverable = true
-        self.objects.settings.is_clickable = true
-        self.objects.settings.is_hoverable = true
-        self.objects.btn_info.is_clickable = true
-        self.objects.btn_info.is_hoverable = true
-        self.objects.scoreboard.is_clickable = true
-        self.objects.scoreboard.is_hoverable = true
-        self.objects.reset_levels.is_clickable = false
-        self.objects.close.is_clickable = false
+        if self.objects.credits.alpha == 1 then
+            self.objects.credits.alpha = 0
+            for _, obj in ipairs(self.group_settings) do
+                obj.alpha = 1
+                obj.is_hoverable = true
+                obj.is_clickable = true
+            end
+        else
+            self.objects.box_info.alpha = 0
+            self.objects.play.is_clickable = true
+            self.objects.play.is_hoverable = true
+            self.objects.quit.is_clickable = true
+            self.objects.quit.is_hoverable = true
+            self.objects.settings.is_clickable = true
+            self.objects.settings.is_hoverable = true
+            self.objects.btn_info.is_clickable = true
+            self.objects.btn_info.is_hoverable = true
+            self.objects.scoreboard.is_clickable = true
+            self.objects.scoreboard.is_hoverable = true
+            self.objects.reset_levels.is_clickable = false
+            self.objects.close.is_clickable = false
+        end
     end
 
     self.objects.slider.on_dragged = function(_, current_value)
