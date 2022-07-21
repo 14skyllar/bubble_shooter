@@ -20,7 +20,7 @@ function Bubble:new(opts)
     self.ox = opts.ox or 0
     self.oy = opts.oy or 0
     self.main_oy = opts.main_oy or self.oy
-    self.rad = width * self.sx * 2.5
+    self.rad = width * self.sx * 0.5
     self.alpha = opts.alpha or 1
     self.vx, self.vy = 0, 0
     self.is_hit = false
@@ -31,8 +31,8 @@ end
 function Bubble:check_collision(other, is_border)
     local a = vec2(self.x, self.y)
     local b = vec2(other.x, other.y)
-    local rad_a = self.rad * self.sx
-    local rad_b = other.rad * other.sx
+    local rad_a = self.rad
+    local rad_b = other.rad
     if is_border then
         rad_b = other.rad
     end
@@ -105,7 +105,7 @@ function Bubble:draw()
 
     if Dev.is_enabled then
         love.graphics.setColor(1, 0, 0, 1)
-        love.graphics.circle("line", self.x, self.y, self.rad * self.sx)
+        love.graphics.circle("line", self.x, self.y, self.rad)
         love.graphics.circle("fill", self.x, self.y, 2)
         love.graphics.circle("line", self.x, self.y, self.within_rad)
     end

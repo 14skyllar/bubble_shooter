@@ -31,8 +31,6 @@ local push_back = {
 }
 
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
-local bubble_scale = 0.2
-local bubble_size = 240
 
 local fade_in_sec = 2
 local fade_out_sec = 1
@@ -54,6 +52,9 @@ bgm_delay = 0.5
 
 function Game:new(difficulty, level, hearts)
     local id = self:type()
+    self.bubble_scale = 0.2
+    self.bubble_size = 240
+
     self.difficulty = difficulty
     self.level = level
     self.hearts = hearts or 3
@@ -560,6 +561,18 @@ function Game:create_bubbles(border_height, border_scale)
     local window_width = love.graphics.getWidth()
     local half_window_width = window_width * 0.5
 
+    --check if bubbles will go past windows edges
+    local temp_key = tablex.pick_random(self.bubbles_key)
+    local bubble_image = self.images_bubbles[temp_key]
+    local bw = bubble_image:getWidth()
+    local total_width = self.rows * bw * self.bubble_scale
+
+    while total_width > window_width * 0.95 do
+        self.bubble_scale = self.bubble_scale - 0.05
+        total_width = self.rows * bw * self.bubble_scale
+        print("bubble_scale = ", self.bubble_scale)
+    end
+
     if self.difficulty == "easy" then
         for i = 0, self.rows - 1 do
             local cols = self.rows - i
@@ -568,15 +581,15 @@ function Game:create_bubbles(border_height, border_scale)
                 local color_name = Colors.get_color(key)
                 local image = self.images_bubbles[key]
                 local width, height = image:getDimensions()
-                local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
-                local y = self.border_y + (border_height * border_scale) + height * bubble_scale * 0.5
-                x = x + (width * bubble_scale * j)
-                y = y + (height * bubble_scale * i)
+                local x = half_window_width - ((cols - 1) * 0.5) * (width * self.bubble_scale)
+                local y = self.border_y + (border_height * border_scale * 0.5) + height * self.bubble_scale * 0.5
+                x = x + (width * self.bubble_scale * j)
+                y = y + (height * self.bubble_scale * i)
 
                 local bubble = Bubble({
                     image = image,
                     x = x, y = y,
-                    sx = bubble_scale, sy = bubble_scale,
+                    sx = self.bubble_scale, sy = self.bubble_scale,
                     ox = width * 0.5, oy = height * 0.5,
                     color_name = color_name,
                 })
@@ -586,22 +599,22 @@ function Game:create_bubbles(border_height, border_scale)
         end
 
     elseif self.difficulty == "medium" then
-        local cols = math.floor(window_width/(bubble_size * bubble_scale))
+        local cols = math.floor(window_width/(self.bubble_size * self.bubble_scale))
         for i = 0, self.rows - 1 do
             for j = 0, cols - 1 do
                 local key = tablex.pick_random(self.bubbles_key)
                 local color_name = Colors.get_color(key)
                 local image = self.images_bubbles[key]
                 local width, height = image:getDimensions()
-                local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
-                local y = self.border_y + (border_height * border_scale) + height * bubble_scale * 0.5
-                x = x + (width * bubble_scale * j)
-                y = y + (height * bubble_scale * i)
+                local x = half_window_width - ((cols - 1) * 0.5) * (width * self.bubble_scale)
+                local y = self.border_y + (border_height * border_scale * 0.5) + height * self.bubble_scale * 0.5
+                x = x + (width * self.bubble_scale * j)
+                y = y + (height * self.bubble_scale * i)
 
                 local bubble = Bubble({
                     image = image,
                     x = x, y = y,
-                    sx = bubble_scale, sy = bubble_scale,
+                    sx = self.bubble_scale, sy = self.bubble_scale,
                     ox = width * 0.5, oy = height * 0.5,
                     color_name = color_name,
                 })
@@ -619,15 +632,15 @@ function Game:create_bubbles(border_height, border_scale)
                 local color_name = Colors.get_color(key)
                 local image = self.images_bubbles[key]
                 local width, height = image:getDimensions()
-                local x = half_window_width - ((cols - 1) * 0.5) * (width * bubble_scale)
-                local y = self.border_y + (border_height * border_scale) + height * bubble_scale * 0.5
-                x = x + (width * bubble_scale * j)
-                y = y + (height * bubble_scale * i)
+                local x = half_window_width - ((cols - 1) * 0.5) * (width * self.bubble_scale)
+                local y = self.border_y + (border_height * border_scale * 0.5) + height * self.bubble_scale * 0.5
+                x = x + (width * self.bubble_scale * j)
+                y = y + (height * self.bubble_scale * i)
 
                 local bubble = Bubble({
                     image = image,
                     x = x, y = y,
-                    sx = bubble_scale, sy = bubble_scale,
+                    sx = self.bubble_scale, sy = self.bubble_scale,
                     ox = width * 0.5, oy = height * 0.5,
                     color_name = color_name,
                 })
@@ -816,7 +829,7 @@ function Game:reload()
     self.objects.ammo = Bubble({
         image = image,
         x = shooter.x, y = shooter.y,
-        sx = bubble_scale, sy = bubble_scale,
+        sx = self.bubble_scale, sy = self.bubble_scale,
         ox = width * 0.5, oy = height * 0.75,
         main_oy = height * 0.5,
         color_name = new_data.color_name,
@@ -1510,9 +1523,12 @@ end
 
 function Game:keypressed(key)
     if key == "q" then
-        self.objects.bg_question.alpha = 0
-        self.objects.bg_question.text_alpha = 0
-        for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0 end
+        local bg_question = self.objects.bg_question
+        if bg_question then
+            bg_question.alpha = 0
+            bg_question.text_alpha = 0
+            for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0 end
+        end
     elseif key == "p" then
         self:open_settings()
     elseif key == "w" then
