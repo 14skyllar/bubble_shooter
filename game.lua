@@ -526,7 +526,6 @@ function Game:wrong_answer(value, push_only)
     if #self.questions == 0 then
         self.questions = tablex.copy(require("questions." .. self.difficulty))
     end
-    self.border_move = true
 
     if self.objects.bg_question then
         self.objects.bg_question.alpha = 0.5
@@ -541,16 +540,20 @@ function Game:wrong_answer(value, push_only)
     for _, border in ipairs(self.border) do border.target_y = border.y + value end
     for _, bubble in ipairs(self.bubbles) do bubble.target_y = bubble.y + value end
     self.border_y = self.border_y + value
-    self.border_move_timer = timer(wrong_dur,
-        function(progress)
-            for _, border in ipairs(self.border) do border.y = mathx.lerp(border.y, border.target_y, progress) end
-            for _, bubble in ipairs(self.bubbles) do bubble.y = mathx.lerp(bubble.y, bubble.target_y, progress) end
-        end,
-        function()
-            if not push_only then
+
+    if push_only then
+        for _, border in ipairs(self.border) do border.y = border.target_y end
+        for _, bubble in ipairs(self.bubbles) do bubble.y = bubble.target_y end
+    else
+        self.border_move_timer = timer(wrong_dur,
+            function(progress)
+                for _, border in ipairs(self.border) do border.y = mathx.lerp(border.y, border.target_y, progress) end
+                for _, bubble in ipairs(self.bubbles) do bubble.y = mathx.lerp(bubble.y, bubble.target_y, progress) end
+            end,
+            function()
                 self:show_question()
-            end
-        end)
+            end)
+    end
 end
 
 function Game:create_bubbles(border_height, border_scale)
@@ -649,19 +652,21 @@ function Game:create_bubbles(border_height, border_scale)
     -- end
 
     --check for total y the bubbles will reach after compressing
-    local lowest_y = 0
+    local lowest_y, lowest_bubble = 0, nil
     for _, bubble in ipairs(self.bubbles) do
         local y = bubble.y + bubble.rad * bubble.sy
         if y > lowest_y then
             lowest_y = y
+            lowest_bubble = bubble
         end
     end
 
     local window_height = love.graphics.getHeight()
     local threshold = window_height * 0.55
 
-    if lowest_y > threshold then
+    while lowest_y > threshold do
         self:wrong_answer(-self.increase * push_back[self.difficulty], true)
+        lowest_y = lowest_bubble.y + lowest_bubble.rad * lowest_bubble.sy
     end
 end
 
@@ -1361,7 +1366,7 @@ function Game:update(dt)
         end
     end
 
-    if self.border_move then
+    if self.border_move_timer then
         self.border_move_timer:update(dt)
     end
 
@@ -1514,6 +1519,18 @@ function Game:keypressed(key)
         self:game_over(true)
     elseif key == "u" then
         self:show_powerup()
+    elseif key == "n" then
+        local next_state = require("game")
+        self.level = self.level + 1
+        if self.level > UserData.data.progress[self.difficulty].total then
+            if self.difficulty == "easy" then
+                self.difficulty = "medium"
+            elseif self.difficulty == "medium" then
+                self.difficulty = "hard"
+            end
+            self.level = UserData.data.progress[self.difficulty].current
+        end
+        StateManager:switch(next_state, self.difficulty, self.level)
     end
 
     local obj_input = self.waiting_for_input
