@@ -146,7 +146,7 @@ local hard = {
 	{
 		question = "Which among the following is not a property of a metallic compound?",
 		answer = "a",
-		info = "Did you know that A metallic compound is a compound that contains one or more metal elements bonded to another element. Typically, the metal atom acts as the cation in the compound and is bonded to a nonmetallic anion or an ionic group.",
+		info = "Did you know that A metallic compound is a compound that contains one or more metal elements bonded to another element. Typically, the metal atom acts as the cation in the compound and is bonded to a nonmetallic anion or an ionic oe.",
 		a = "Low melting point",
 		b = "Luster",
 		c = "Good conductor of heat",
@@ -165,10 +165,10 @@ local hard = {
 		question = "Which of the following states the difference between a polar covalent bond and a nonpolar covalent bond?",
 		answer = "d",
 		info = "Did you know that If two atoms have an electronegativity difference of 0.4 or less, they form a non-polar covalent bond while if two atoms have an electronegativity difference between 0.4 and 1.8, they form a polar covalent bond.",
-		a = "Polar covalent bond is formed between metals and nonmetals while nonpolar covalent bond forms between nonmetals.",
-		b = "Polar covalent bond is formed between nonmetals while nonpolar covalent bond forms between metal and nonmetals.",
-		c = "Polar covalent bond is formed between the same nonmetals and nonmetals while nonpolar covalent bond forms between different nonmetals.",
-		d = "Polar covalent bond is formed between the different nonmetals while nonpolar covalent bond forms between the same nonmetals.",
+		a = "Polar covalent bond formed between metals and nonmetals;nonpolar covalent bond forms between nonmetals.",
+		b = "Polar covalent bond formed between nonmetals; nonpolar covalent bond forms between metal and nonmetals.",
+		c = "Polar covalent bond formed between the same nonmetals and nonmetals; nonpolar covalent bond is between different nonmetals.",
+		d = "Polar covalent bond formed between the different nonmetals; nonpolar covalent bond forms between the same nonmetals.",
 	},
 	{
 		question = "This is a bond that results when two identical non-metallic atoms combine.",
@@ -403,7 +403,14 @@ local hard = {
 	},
 	{
 		question = "Give one element belong to the Metalloid Group. (Symbol/s only)",
-		answer = "B;Si;Ge;As;Sb;Te",
+		answer = {
+			"B",
+			"Si",
+			"Ge",
+			"As",
+			"Sb",
+			"Te",
+		},
 		info = "Did you know that The most abundant metalloid in Earth's crust is silicon, which is the second most abundant element overall (oxygen is most abundant).",
 		identification = true
 	},
