@@ -187,7 +187,8 @@ function Menu:load()
         x = half_window_width, y = half_window_height,
         sx = 0.75, sy = 0.75,
         ox = box_width * 0.5, oy = box_height * 0.5,
-        is_hoverable = false, alpha = 0, max_alpha = 0.8
+        is_hoverable = false, is_clickable = false,
+        alpha = 0, max_alpha = 0.8
     })
 
     local close_width, close_height = self.images.close:getDimensions()
@@ -575,8 +576,10 @@ function Menu:load()
             self.objects.credits.alpha = 0
             for _, obj in ipairs(self.group_settings) do
                 obj.alpha = 1
-                obj.is_hoverable = true
-                obj.is_clickable = true
+                if obj ~= self.objects.box then
+                    obj.is_hoverable = true
+                    obj.is_clickable = true
+                end
             end
         else
             self.objects.box_info.alpha = 0
