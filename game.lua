@@ -507,6 +507,7 @@ end
 
 function Game:correct_answer()
     local obj_question = self.objects.bg_question
+    if not obj_question then return end
 
     self.wait_timer = timer(info_show_dur,
         function(progress)
@@ -1418,7 +1419,7 @@ function Game:update(dt)
     end
 
     if lowest_bubble then
-        local threshold = shooter.y - shooter.oy * shooter.sy + 32
+        local threshold = shooter.y - shooter.oy * shooter.sy
         if lowest_y + lowest_bubble.rad * lowest_bubble.sy >= threshold then
             local obj_heart = self.objects["heart_" .. self.hearts]
             if obj_heart then
@@ -1484,6 +1485,12 @@ function Game:draw()
         love.graphics.setFont(tmp_font)
         love.graphics.setColor(1, 1, 1, 1)
     end
+
+    -- local shooter = self.objects.shooter
+    -- local threshold = shooter.y - shooter.oy * shooter.sy
+    -- love.graphics.setColor(1, 0, 0, 1)
+    -- love.graphics.line(0, threshold, love.graphics.getWidth(), threshold)
+    -- love.graphics.setColor(1, 1, 1, 1)
 end
 
 function Game:mousepressed(mx, my, mb)
@@ -1543,9 +1550,9 @@ function Game:keypressed(key)
     if key == "q" then
         local bg_question = self.objects.bg_question
         if bg_question then
-            bg_question.alpha = 0
-            bg_question.text_alpha = 0
-            for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0 end
+            bg_question.alpha = 0.1
+            bg_question.text_alpha = 0.1
+            for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0.1 end
         end
     elseif key == "p" then
         self:open_settings()
