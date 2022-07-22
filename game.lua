@@ -483,9 +483,9 @@ function Game:check_answer(choice_obj)
     local is_correct = false
 
     if type(answer) == "string" then
-        is_correct = user_answer == string.lower(self.current_question.answer)
+        is_correct = user_answer == string.lower(answer)
     elseif type(answer) == "table" then
-        for _, str in ipairs(self.current_question.answer) do
+        for _, str in ipairs(answer) do
             str = string.lower(str)
             if user_answer == str then
                 is_correct = true
