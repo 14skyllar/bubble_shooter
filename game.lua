@@ -645,7 +645,7 @@ function Game:create_bubbles(border_height, border_scale)
 
     elseif self.difficulty == "hard" then
         local cols = self.rows
-        for i = 0, self.rows do
+        for i = 0, self.rows - 1 do
             for j = 0, cols - 1 do
                 local key = tablex.pick_random(self.bubbles_key)
                 local color_name = Colors.get_color(key)
