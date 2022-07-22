@@ -1,6 +1,6 @@
 require("libs.batteries"):export()
 
-local Dev = require("dev")
+-- local Dev = require("dev")
 local Menu = require("menu")
 local Resources = require("resources")
 local StateManager = require("state_manager")
@@ -23,7 +23,7 @@ function love.load()
 
     -- to start in main menu, comment the next two lines
     -- local Game = require("game")
-    -- StateManager.current = Game("hard", 1)
+    -- StateManager.current = Game("medium", 15)
 
     -- then uncomment this
     StateManager.current = Menu()
@@ -47,7 +47,7 @@ function love.draw()
 
     love.graphics.draw(canvas)
 
-    Dev:draw()
+    -- Dev:draw()
 end
 
 function love.mousepressed(mx, my, mb)
@@ -63,7 +63,7 @@ function love.mousemoved(mx, my, dmx, dmy, istouch)
 end
 
 function love.keypressed(key)
-    Dev:keypressed(key)
+    -- Dev:keypressed(key)
     StateManager:keypressed(key)
 end
 

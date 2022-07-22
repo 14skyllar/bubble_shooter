@@ -41,13 +41,13 @@ local pop_dur = 1
 local bgm_delay = 2
 
 --TODO remove these
-fade_in_sec = 0.1
-fade_out_sec = 0.1
-info_show_dur = 0.1
-info_dur = 0.1
-wrong_dur = 0.1
-pop_dur = 0.25
-bgm_delay = 0.5
+-- fade_in_sec = 0.1
+-- fade_out_sec = 0.1
+-- info_show_dur = 0.1
+-- info_dur = 0.1
+-- wrong_dur = 0.1
+-- pop_dur = 0.25
+-- bgm_delay = 0.5
 
 
 function Game:new(difficulty, level, hearts)
