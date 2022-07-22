@@ -16,7 +16,7 @@ local rows = {
     -- easy = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
     easy = {4, 5, 6, 7, 8, 9, 9, 9, 9, 9, 9},
     medium = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17},
-    hard = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22},
+    hard = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19},
 }
 
 local game_timers = {
@@ -363,7 +363,13 @@ function Game:show_question()
         local key = "choice_" .. i
         local str_question, letter
 
-        if type(self.current_question.answer) == "table" then
+        if self.current_question.true_or_false then
+            letter = tostring(i == 1)
+            str_question = tostring(letter)
+        elseif self.current_question.identification then
+            letter = ""
+            str_question = "(tap here to type)"
+        elseif type(self.current_question.answer) == "table" then
             letter = self.current_question.answer
             local widest = ""
             for _, str in ipairs(self.current_question.answer) do
@@ -372,12 +378,6 @@ function Game:show_question()
                 end
             end
             str_question = widest
-        elseif self.current_question.true_or_false then
-            letter = i == 1
-            str_question = tostring(letter)
-        elseif self.current_question.identification then
-            letter = ""
-            str_question = "(tap here to type)"
         else
             letter = string.char(ascii)
             str_question = self.current_question[letter]
@@ -580,6 +580,7 @@ function Game:create_bubbles(border_height, border_scale)
     local bw = bubble_image:getWidth()
 
     local n_rows = self.rows
+    print("rows =", n_rows)
     if self.difficulty == "hard" then
         n_rows = math.floor(self.rows * 1.5)
     end

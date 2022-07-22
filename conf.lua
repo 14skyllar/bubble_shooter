@@ -24,6 +24,7 @@ function love.conf(t)
 	t.window.width = 1080/3 --360
 	t.window.height = 1920/3 --480
 	t.window.resizable = false
+	t.console = true
 
 	t.identity = "EMSCBPTBS"
 	t.version = "11.3"
