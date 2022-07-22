@@ -13,7 +13,8 @@ local Game = class({
 })
 
 local rows = {
-    easy = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+    -- easy = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13},
+    easy = {4, 5, 6, 7, 8, 9, 9, 9, 9, 9, 9},
     medium = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17},
     hard = {4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22},
 }
@@ -319,7 +320,6 @@ function Game:show_question()
     self.max_answer_length = most
 
     self.current_question = tablex.take_random(self.questions)
-    -- self.current_question = self.questions[#self.questions] --hard, indentification
     print("Remaining questions:", #self.questions)
 
     self.objects.bg_question = Button({
@@ -363,7 +363,16 @@ function Game:show_question()
         local key = "choice_" .. i
         local str_question, letter
 
-        if self.current_question.true_or_false then
+        if type(self.current_question.answer) == "table" then
+            letter = self.current_question.answer
+            local widest = ""
+            for _, str in ipairs(self.current_question.answer) do
+                if #str > #widest then
+                    widest = str
+                end
+            end
+            str_question = widest
+        elseif self.current_question.true_or_false then
             letter = i == 1
             str_question = tostring(letter)
         elseif self.current_question.identification then
@@ -467,15 +476,19 @@ function Game:check_answer(choice_obj)
         obj.is_clickable = false
     end
 
+    local answer = self.current_question.answer
+    if type(answer) == "boolean" then
+        answer = tostring(answer)
+    end
     local user_answer = string.lower(choice_obj.value)
     local is_correct = false
 
-    if type(self.current_question.answer) == "string" then
+    if type(answer) == "string" then
         is_correct = user_answer == string.lower(self.current_question.answer)
-    elseif type(self.current_question.answer) == "table" then
-        for _, answer in ipairs(self.current_question.answer) do
-            answer = string.lower(answer)
-            if user_answer == answer then
+    elseif type(answer) == "table" then
+        for _, str in ipairs(self.current_question.answer) do
+            str = string.lower(str)
+            if user_answer == str then
                 is_correct = true
                 break
             end
@@ -565,11 +578,16 @@ function Game:create_bubbles(border_height, border_scale)
     local temp_key = tablex.pick_random(self.bubbles_key)
     local bubble_image = self.images_bubbles[temp_key]
     local bw = bubble_image:getWidth()
-    local total_width = self.rows * bw * self.bubble_scale
+
+    local n_rows = self.rows
+    if self.difficulty == "hard" then
+        n_rows = math.floor(self.rows * 1.5)
+    end
+    local total_width = n_rows * bw * self.bubble_scale
 
     while total_width > window_width * 0.95 do
         self.bubble_scale = self.bubble_scale - 0.05
-        total_width = self.rows * bw * self.bubble_scale
+        total_width = n_rows * bw * self.bubble_scale
         print("bubble_scale = ", self.bubble_scale)
     end
 

@@ -46,7 +46,7 @@ local hard = {
 		b = "Molecule",
 		c = "Atom",
 		d = "Ion",
-	}, 
+	},
 	{
 		question = "Which among the following compounds forms a polar covalent bond?",
 		answer = "d",
