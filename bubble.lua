@@ -24,7 +24,7 @@ function Bubble:new(opts)
     self.alpha = opts.alpha or 1
     self.vx, self.vy = 0, 0
     self.is_hit = false
-    self.within_rad = self.rad * self.sx * 2 * 1.5
+    self.within_rad = self.rad * 2.5
     self.color_name = opts.color_name
 end
 
