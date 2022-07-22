@@ -587,7 +587,7 @@ function Game:create_bubbles(border_height, border_scale)
     local total_width = n_rows * bw * self.bubble_scale
 
     while total_width > window_width * 0.95 do
-        self.bubble_scale = self.bubble_scale - 0.05
+        self.bubble_scale = self.bubble_scale - 0.01
         total_width = n_rows * bw * self.bubble_scale
         print("bubble_scale = ", self.bubble_scale)
     end
