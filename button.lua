@@ -143,6 +143,18 @@ end
 
 function Button:mousepressed(mx, my, mb)
     if not self.is_clickable then return end
+    -- if mb == 1 and self.is_overlap and self.on_clicked then
+    --     if self.on_click_sound then
+    --         self.on_click_sound:play()
+    --         self.on_click_sound:setLooping(false)
+    --     end
+    --     self:on_clicked()
+    --     return true
+    -- end
+end
+
+function Button:mousereleased(mx, my, mb)
+    if not self.is_clickable then return end
     if mb == 1 and self.is_overlap and self.on_clicked then
         if self.on_click_sound then
             self.on_click_sound:play()
@@ -151,9 +163,6 @@ function Button:mousepressed(mx, my, mb)
         self:on_clicked()
         return true
     end
-end
-
-function Button:mousereleased(mx, my, mb)
 end
 
 return Button

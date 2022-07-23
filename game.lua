@@ -35,7 +35,7 @@ local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
 local fade_in_sec = 2
 local fade_out_sec = 1
 local info_show_dur = 1.5
-local info_dur = 10
+local info_dur = 5
 local wrong_dur = 1.5
 local pop_dur = 1
 local bgm_delay = 2
@@ -1276,8 +1276,11 @@ function Game:update(dt)
     if self.bgm_timer then self.bgm_timer:update(dt) end
 
     if self.is_game_over then
-        for _, btn in ipairs(self.win_lose_buttons) do
-            btn:update(dt)
+        for i = 1, #self.win_lose_buttons do
+            local btn = self.win_lose_buttons[i]
+            if btn then
+                btn:update(dt)
+            end
         end
         return
     end
@@ -1494,6 +1497,16 @@ function Game:draw()
 end
 
 function Game:mousepressed(mx, my, mb)
+    if self.is_game_over then
+        for i = 1, #self.win_lose_buttons do
+            local btn = self.win_lose_buttons[i]
+            if btn then
+                btn:mousepressed(mx, my, mb)
+            end
+        end
+        return
+    end
+
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn and btn.mousepressed then
@@ -1512,6 +1525,16 @@ function Game:mousepressed(mx, my, mb)
 end
 
 function Game:mousereleased(mx, my, mb)
+    if self.is_game_over then
+        for i = 1, #self.win_lose_buttons do
+            local btn = self.win_lose_buttons[i]
+            if btn then
+                btn:mousereleased(mx, my, mb)
+            end
+        end
+        return
+    end
+
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn and btn.was_clicked then
@@ -1558,6 +1581,8 @@ function Game:keypressed(key)
         self:open_settings()
     elseif key == "w" then
         self:game_over(true)
+    elseif key == "l" then
+        self:game_over()
     elseif key == "u" then
         self:show_powerup()
     elseif key == "n" then
