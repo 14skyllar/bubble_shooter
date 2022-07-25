@@ -797,6 +797,13 @@ function Menu:mousereleased(mx, my, mb)
     end
 end
 
+function Menu:mousemoved(mx, my, dmx, dmy, istouch)
+    local slider = self.objects.slider
+    if slider then
+        slider:mousemoved(mx, my, dmx, dmy, istouch)
+    end
+end
+
 function Menu:exit()
     for _, source in pairs(self.sources) do
         source:stop()

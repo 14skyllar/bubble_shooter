@@ -109,4 +109,14 @@ function Slider:mousereleased(mx, my, mb)
     end
 end
 
+function Slider:mousemoved(mx, my, dmx, dmy, istouch)
+    if not self.hold then return end
+    local new_value = mx/(self.base_kx + self.kw)
+    self.current_value = mathx.clamp(new_value, 0, self.max_value)
+
+    if self.on_dragged then
+        self:on_dragged(self.current_value)
+    end
+end
+
 return Slider
