@@ -804,6 +804,13 @@ function Menu:mousemoved(mx, my, dmx, dmy, istouch)
     end
 end
 
+function Menu:mousefocus(focus)
+    local slider = self.objects.slider
+    if slider then
+        slider:mousefocus(focus)
+    end
+end
+
 function Menu:exit()
     for _, source in pairs(self.sources) do
         source:stop()

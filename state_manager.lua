@@ -53,4 +53,10 @@ function StateManager:textinput(text)
     end
 end
 
+function StateManager:mousefocus(focus)
+    if self.current.mousefocus then
+        self.current:mousefocus(focus)
+    end
+end
+
 return StateManager

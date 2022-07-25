@@ -1650,6 +1650,13 @@ function Game:textinput(text)
     end
 end
 
+function Game:mousefocus(focus)
+    if not focus then
+        self.is_targeting = false
+        tablex.clear(self.target_path)
+    end
+end
+
 function Game:exit()
     for _, source in pairs(self.sources) do
         source:stop()

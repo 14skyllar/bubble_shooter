@@ -71,6 +71,10 @@ function love.textinput(text)
     StateManager:textinput(text)
 end
 
+function love.mousefocus(focus)
+    StateManager:mousefocus(focus)
+end
+
 function love.quit()
     UserData:save()
 end

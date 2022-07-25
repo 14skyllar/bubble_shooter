@@ -119,4 +119,10 @@ function Slider:mousemoved(mx, my, dmx, dmy, istouch)
     end
 end
 
+function Slider:mousefocus(focus)
+    if not focus then
+        self.hold = false
+    end
+end
+
 return Slider
