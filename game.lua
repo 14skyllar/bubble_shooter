@@ -1511,10 +1511,7 @@ function Game:mousepressed(mx, my, mb)
         local btn = self.objects[id]
         if btn and btn.mousepressed then
             local res = btn:mousepressed(mx, my, mb)
-            if res then
-                btn.was_clicked = true
-                return
-            end
+            if res then return end
         end
     end
 
@@ -1537,9 +1534,9 @@ function Game:mousereleased(mx, my, mb)
 
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
-        if btn and btn.was_clicked then
-            btn.was_clicked = false
-            return
+        if btn then
+            local res = btn:mousereleased(mx, my, mb)
+            if res then return end
         end
     end
 

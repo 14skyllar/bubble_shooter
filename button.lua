@@ -161,6 +161,7 @@ function Button:mousereleased(mx, my, mb)
             self.on_click_sound:setLooping(false)
         end
         self:on_clicked()
+        self.is_overlap = false
         return true
     end
 end

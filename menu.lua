@@ -778,7 +778,7 @@ function Menu:mousepressed(mx, my, mb)
         local btn = self.objects[id]
         if btn then
             local res = btn:mousepressed(mx, my, mb)
-            if res then break end
+            if res then return end
         end
     end
 end
@@ -787,7 +787,8 @@ function Menu:mousereleased(mx, my, mb)
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn then
-            btn:mousereleased(mx, my, mb)
+            local res = btn:mousereleased(mx, my, mb)
+            if res then return end
         end
     end
 end
