@@ -771,6 +771,10 @@ function Menu:draw()
             btn:draw()
         end
     end
+
+    love.graphics.setColor(1, 0, 0, 1)
+    love.graphics.print(tostring(UserData.data.main_volume), 32, 32)
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 function Menu:mousepressed(mx, my, mb)
