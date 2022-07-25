@@ -1309,7 +1309,7 @@ function Game:update(dt)
         end
     end
 
-    if #self.bubbles == 0 then
+    if not self.is_game_over and #self.bubbles == 0 then
         self:game_over(true)
     end
 
@@ -1500,8 +1500,9 @@ function Game:mousepressed(mx, my, mb)
     if self.is_game_over then
         for i = 1, #self.win_lose_buttons do
             local btn = self.win_lose_buttons[i]
-            if btn then
-                btn:mousepressed(mx, my, mb)
+            if btn and btn.mousepressed then
+                local res = btn:mousepressed(mx, my, mb)
+                if res then return end
             end
         end
         return
@@ -1525,8 +1526,9 @@ function Game:mousereleased(mx, my, mb)
     if self.is_game_over then
         for i = 1, #self.win_lose_buttons do
             local btn = self.win_lose_buttons[i]
-            if btn then
-                btn:mousereleased(mx, my, mb)
+            if btn and btn.mousereleased then
+                local res = btn:mousereleased(mx, my, mb)
+                if res then return end
             end
         end
         return
@@ -1534,7 +1536,7 @@ function Game:mousereleased(mx, my, mb)
 
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
-        if btn then
+        if btn and btn.mousereleased then
             local res = btn:mousereleased(mx, my, mb)
             if res then return end
         end
