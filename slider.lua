@@ -98,13 +98,20 @@ function Slider:draw()
 end
 
 function Slider:mousepressed(mx, my, mb)
-    if mb == 1 and self.is_knob_hovered then
+    if mb ~= 1 then return end
+    self.mouse.x, self.mouse.y = mx, my
+    self.is_knob_hovered = intersect.point_circle_overlap(
+        self.mouse,
+        self.knob_pos,
+        self.knob_radius
+    )
+    if self.is_knob_hovered then
         self.hold = true
     end
 end
 
 function Slider:mousereleased(mx, my, mb)
-    if mb == 1 and self.hold then
+    if mb == 1 then
         self.hold = false
     end
 end
