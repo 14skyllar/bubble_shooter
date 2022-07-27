@@ -45,22 +45,6 @@ function Slider:update(dt)
             self.fade = 0
         end
     end
-
-    local mx, my = love.mouse.getPosition()
-    self.mouse.x, self.mouse.y = mx, my
-    self.is_knob_hovered = intersect.point_circle_overlap(self.mouse, self.knob_pos, self.knob_radius)
-
-    if self.hold then
-        local new_value = mx/(self.base_kx + self.kw)
-        self.current_value = mathx.clamp(new_value, 0, self.max_value)
-
-        if self.on_dragged then
-            self:on_dragged(self.current_value)
-        end
-    end
-
-    local value = self.current_value/self.max_value
-    self.knob_pos.x = self.base_kx + value * self.kw
 end
 
 function Slider:draw()
@@ -121,6 +105,9 @@ function Slider:mousemoved(mx, my, dmx, dmy, istouch)
     local new_value = mx/(self.base_kx + self.kw)
     self.current_value = mathx.clamp(new_value, 0, self.max_value)
 
+    local value = self.current_value/self.max_value
+    self.knob_pos.x = self.base_kx + value * self.kw
+
     if self.on_dragged then
         self:on_dragged(self.current_value)
     end
@@ -128,6 +115,13 @@ end
 
 function Slider:mousefocus(focus)
     if not focus then
+        if self.hold and love.mouse.getX() <= 32 then
+            self.knob_pos.x = self.base_kx + 0 * self.kw
+            if self.on_dragged then
+                self:on_dragged(0)
+            end
+        end
+
         self.hold = false
     end
 end
