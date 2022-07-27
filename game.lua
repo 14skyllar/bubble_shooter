@@ -1415,6 +1415,11 @@ function Game:update(dt)
     --get the bubble that is in the lowest pos
     local lowest_bubble, lowest_y = nil, 0
     for _, bubble in ipairs(self.bubbles) do
+        if bubble ~= self.objects.powerup then
+            if bubble.y > lowest_y then
+                lowest_bubble = bubble
+                lowest_y = bubble.y
+            end
         if bubble.y > lowest_y then
             lowest_bubble = bubble
             lowest_y = bubble.y
