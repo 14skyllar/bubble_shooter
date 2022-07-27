@@ -1,6 +1,7 @@
 require("libs.batteries"):export()
 
 -- local Dev = require("dev")
+local Game = require("game")
 local Menu = require("menu")
 local Resources = require("resources")
 local StateManager = require("state_manager")
@@ -22,8 +23,7 @@ function love.load()
     canvas = love.graphics.newCanvas(target_width, target_height)
 
     -- to start in main menu, comment the next two lines
-    -- local Game = require("game")
-    -- StateManager.current = Game("medium", 15)
+    -- StateManager.current = Game("hard", 1)
 
     -- then uncomment this
     StateManager.current = Menu()
