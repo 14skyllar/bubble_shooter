@@ -1571,34 +1571,34 @@ function Game:mousemoved(mx, my, dmx, dmy, istouch)
 end
 
 function Game:keypressed(key)
-    if key == "q" then
-        local bg_question = self.objects.bg_question
-        if bg_question then
-            bg_question.alpha = 0.1
-            bg_question.text_alpha = 0.1
-            for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0.1 end
-        end
-    elseif key == "p" then
-        self:open_settings()
-    elseif key == "w" then
-        self:game_over(true)
-    elseif key == "l" then
-        self:game_over()
-    elseif key == "u" then
-        self:show_powerup()
-    elseif key == "n" then
-        local next_state = require("game")
-        self.level = self.level + 1
-        if self.level > UserData.data.progress[self.difficulty].total then
-            if self.difficulty == "easy" then
-                self.difficulty = "medium"
-            elseif self.difficulty == "medium" then
-                self.difficulty = "hard"
-            end
-            self.level = UserData.data.progress[self.difficulty].current
-        end
-        StateManager:switch(next_state, self.difficulty, self.level)
-    end
+    -- if key == "q" then
+    --     local bg_question = self.objects.bg_question
+    --     if bg_question then
+    --         bg_question.alpha = 0.1
+    --         bg_question.text_alpha = 0.1
+    --         for i = 1, self.n_choices do self.objects["choice_" .. i].alpha = 0.1 end
+    --     end
+    -- elseif key == "p" then
+    --     self:open_settings()
+    -- elseif key == "w" then
+    --     self:game_over(true)
+    -- elseif key == "l" then
+    --     self:game_over()
+    -- elseif key == "u" then
+    --     self:show_powerup()
+    -- elseif key == "n" then
+    --     local next_state = require("game")
+    --     self.level = self.level + 1
+    --     if self.level > UserData.data.progress[self.difficulty].total then
+    --         if self.difficulty == "easy" then
+    --             self.difficulty = "medium"
+    --         elseif self.difficulty == "medium" then
+    --             self.difficulty = "hard"
+    --         end
+    --         self.level = UserData.data.progress[self.difficulty].current
+    --     end
+    --     StateManager:switch(next_state, self.difficulty, self.level)
+    -- end
 
     local obj_input = self.waiting_for_input
     if obj_input then
