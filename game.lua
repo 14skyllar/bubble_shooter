@@ -1420,9 +1420,6 @@ function Game:update(dt)
                 lowest_bubble = bubble
                 lowest_y = bubble.y
             end
-        if bubble.y > lowest_y then
-            lowest_bubble = bubble
-            lowest_y = bubble.y
         end
     end
 
@@ -1640,8 +1637,8 @@ function Game:textinput(text)
         local txt_width = font:getWidth(obj_input.text)
         local txt_height = font:getHeight()
 
-        text_x = window_width * 0.5 - choice_width * choice_sx * 0.5 + txt_width * 0.5
-        text_y = obj_input.y - choice_height * choice_sy * 0.5 + txt_height * 0.5 + 8
+        local text_x = window_width * 0.5 - choice_width * choice_sx * 0.5 + txt_width * 0.5
+        local text_y = obj_input.y - choice_height * choice_sy * 0.5 + txt_height * 0.5 + 8
         local tsx = (choice_width * choice_sx)/(txt_width + padding)
         local tsy = (choice_height * choice_sy)/(font:getHeight() * n)
 
