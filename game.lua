@@ -49,7 +49,6 @@ local bgm_delay = 2
 -- pop_dur = 0.25
 -- bgm_delay = 0.5
 
-
 function Game:new(difficulty, level, hearts)
     local id = self:type()
     self.bubble_scale = 0.2
