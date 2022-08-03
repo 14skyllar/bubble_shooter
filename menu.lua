@@ -859,7 +859,7 @@ function Menu:mousemoved(mx, my, dmx, dmy, istouch)
     if info.alpha == 1 and info.is_held then
         local rw, rh = self.quad:getTextureDimensions()
         local x, y, w, h = self.quad:getViewport()
-        y = mathx.clamp(y + dmy, 0, rh - h)
+        y = mathx.clamp(y - dmy, 0, rh - h)
         self.quad:setViewport(x, y, w, h, rw, rh)
     end
 end
