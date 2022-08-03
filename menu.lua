@@ -18,11 +18,11 @@ function Menu:new(start_screen)
     self.objects_order = {
         "title", "play", "quit", "settings", "gear", "btn_info", "scoreboard",
         "sparkle1", "sparkle2", "box", "txt_settings", "txt_volume",
-        "txt_scoreboard", "box_info", "credits", "box_easy", "box_medium",
-        "box_hard", "close", "txt_easy_score", "txt_medium_score",
-        "txt_hard_score", "txt_difficulty", "easy", "medium", "hard",
-        "txt_easy", "txt_medium", "txt_hard", "slider", "reset_levels", "back",
-        "btn_credits",
+        "txt_scoreboard", "box_info", "credits", "box_easy",
+        "box_medium", "box_hard", "close", "txt_easy_score",
+        "txt_medium_score", "txt_hard_score", "txt_difficulty", "easy",
+        "medium", "hard", "txt_easy", "txt_medium", "txt_hard", "slider",
+        "reset_levels", "back", "btn_credits",
     }
 
     for i = 1, UserData.data.progress.hard.total do
@@ -31,6 +31,7 @@ function Menu:new(start_screen)
 
     self.difficulty = nil
     self.start_screen = start_screen
+    self.scroll_y = 0
 end
 
 function Menu:load()
@@ -104,15 +105,20 @@ function Menu:load()
 
     local box_info_width, box_info_height = self.images.box_info:getDimensions()
     local box_info_sx = (window_width - 48)/box_info_width
-    local box_info_sy = (window_height * 0.6)/box_info_height
+    local box_info_sy = (window_height * 0.6)/(box_info_height * 0.5)
     self.objects.box_info = Button({
         image = self.images.box_info,
         x = half_window_width, y = half_window_height,
         sx = box_info_sx, sy = box_info_sy,
-        ox = box_info_width * 0.5, oy = box_info_height * 0.5,
+        ox = box_info_width * 0.5, oy = box_info_height * 0.25,
         is_hoverable = false, is_clickable = false,
         alpha = 0,
     })
+    self.quad = love.graphics.newQuad(
+        0, 0,
+        box_info_width, box_info_height * 0.5,
+        box_info_width, box_info_height
+    )
 
     local credits_width, credits_height = self.images.credits:getDimensions()
     local credits_sx = (window_width - 48)/credits_width
@@ -484,9 +490,9 @@ function Menu:load()
         self.objects.btn_info.is_clickable = false
         self.objects.scoreboard.is_clickable = false
         self.objects.scoreboard.is_hoverable = false
-        self.objects.back.is_clickable = true
-        self.objects.reset_levels.is_clickable = true
-        self.objects.slider.is_clickable = true
+        self.objects.back.is_clickable = false
+        self.objects.reset_levels.is_clickable = false
+        self.objects.slider.is_clickable = false
     end
 
     self.objects.scoreboard.on_clicked = function()
@@ -609,6 +615,23 @@ function Menu:load()
     end
 
     if self.start_screen then
+        self.objects.title.is_clickable = false
+        self.objects.title.is_hoverable = false
+        self.objects.title.alpha = 0
+        self.objects.settings.is_clickable = false
+        self.objects.settings.is_hoverable = false
+        self.objects.settings.alpha = 0
+        self.objects.gear.is_clickable = false
+        self.objects.gear.is_hoverable = false
+        self.objects.gear.alpha = 0
+        self.objects.scoreboard.is_clickable = false
+        self.objects.scoreboard.is_hoverable = false
+        self.objects.scoreboard.alpha = 0
+        self.objects.btn_info.is_clickable = false
+        self.objects.btn_info.is_hoverable = false
+        self.objects.btn_info.alpha = 0
+        self.objects.sparkle1.alpha = 0
+        self.objects.sparkle2.alpha = 0
         self:show_levels(self.start_screen)
     end
 end
@@ -741,6 +764,22 @@ function Menu:update(dt)
     local obj_gear = self.objects.gear
     obj_gear.r = obj_gear.r + dt
 
+    local info = self.objects.box_info
+    if info and info.alpha == 1 then
+        self.objects.play.is_clickable = false
+        self.objects.play.is_hoverable = false
+        self.objects.quit.is_clickable = false
+        self.objects.quit.is_hoverable = false
+        self.objects.settings.is_clickable = false
+        self.objects.settings.is_hoverable = false
+        self.objects.scoreboard.is_clickable = false
+        self.objects.scoreboard.is_hoverable = false
+        self.objects.back.is_clickable = false
+        self.objects.reset_levels.is_clickable = false
+        self.objects.slider.is_clickable = false
+        self.objects.btn_credits.is_clickable = false
+    end
+
     if self.timer_sparkle1 then self.timer_sparkle1:update(dt) end
     if self.timer_sparkle2 then self.timer_sparkle2:update(dt) end
 
@@ -768,7 +807,12 @@ function Menu:draw()
     for _, id in ipairs(self.objects_order) do
         local btn = self.objects[id]
         if btn then
-            btn:draw()
+            local info = self.objects.box_info
+            if btn == info then
+                btn:draw(self.quad)
+            else
+                btn:draw()
+            end
         end
     end
 end
@@ -778,6 +822,12 @@ function Menu:mousepressed(mx, my, mb)
         local btn = self.objects[id]
         if btn then
             local res = btn:mousepressed(mx, my, mb)
+
+            local info = self.objects.box_info
+            if btn == info and info.alpha == 1 then
+                btn.is_held = true
+            end
+
             if res then return end
         end
     end
@@ -788,6 +838,12 @@ function Menu:mousereleased(mx, my, mb)
         local btn = self.objects[id]
         if btn then
             local res = btn:mousereleased(mx, my, mb)
+
+            local info = self.objects.box_info
+            if btn == info and info.alpha == 1 and btn.is_held then
+                btn.is_held = false
+            end
+
             if res then return end
         end
     end
@@ -797,6 +853,14 @@ function Menu:mousemoved(mx, my, dmx, dmy, istouch)
     local slider = self.objects.slider
     if slider then
         slider:mousemoved(mx, my, dmx, dmy, istouch)
+    end
+
+    local info = self.objects.box_info
+    if info.alpha == 1 and info.is_held then
+        local rw, rh = self.quad:getTextureDimensions()
+        local x, y, w, h = self.quad:getViewport()
+        y = mathx.clamp(y + dmy, 0, rh - h)
+        self.quad:setViewport(x, y, w, h, rw, rh)
     end
 end
 

@@ -719,6 +719,7 @@ end
 
 function Game:after_shoot()
     local ammo = self.objects.ammo
+    if not ammo then return end
 
     local stack = {ammo}
     local found = {}
@@ -1570,6 +1571,10 @@ function Game:mousemoved(mx, my, dmx, dmy, istouch)
 end
 
 function Game:keypressed(key)
+    if key == "b" then
+        local next_state = require("menu")
+        StateManager:switch(next_state, self.difficulty)
+    end
     -- if key == "q" then
     --     local bg_question = self.objects.bg_question
     --     if bg_question then

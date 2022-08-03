@@ -90,7 +90,7 @@ function Button:update(dt)
     end
 end
 
-function Button:draw()
+function Button:draw(quad)
     local sx, sy = self.sx, self.sy
     if (self.is_hoverable and self.is_overlap) or self.is_hovered then
         sx = sx + self.sx_dt
@@ -101,6 +101,8 @@ function Button:draw()
 
     if self.anim8 then
         self.anim8:draw(self.image, self.x, self.y, self.r, self.sx, self.sy, self.ox, self.oy)
+    elseif quad then
+        love.graphics.draw(self.image, quad, self.x, self.y, self.r, sx, sy, self.ox, self.oy)
     else
         love.graphics.draw(self.image, self.x, self.y, self.r, sx, sy, self.ox, self.oy)
     end
