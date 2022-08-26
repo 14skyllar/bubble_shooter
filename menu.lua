@@ -471,6 +471,8 @@ function Menu:load()
         self.objects.scoreboard.is_hoverable = false
         self.objects.back.is_clickable = true
         self.objects.slider.is_clickable = true
+        self.objects.btn_credits.is_hoverable = true
+        self.objects.btn_credits.is_clickable = true
     end
 
     self.objects.btn_info.on_clicked = function()
@@ -580,6 +582,8 @@ function Menu:load()
 
         if self.objects.credits.alpha == 1 then
             self.objects.credits.alpha = 0
+            self.objects.btn_credits.is_hoverable = false
+            self.objects.btn_credits.is_clickable = false
             for _, obj in ipairs(self.group_settings) do
                 obj.alpha = 1
                 if obj ~= self.objects.box then

@@ -57,6 +57,7 @@ Resources.sources = {
         {id = "snd_ready_go", kind = "stream"},
         {id = "bgm_level_cleared", kind = "stream"},
         {id = "bgm_gameplay", kind = "stream"},
+        {id = "bgm_lose", kind = "static"},
     }
 }
 

@@ -23,7 +23,7 @@ function love.load()
     canvas = love.graphics.newCanvas(target_width, target_height)
 
     -- to start in main menu, comment the next two lines
-    -- StateManager.current = Game("hard", 1)
+    -- StateManager.current = Game("easy", 1)
 
     -- then uncomment this
     StateManager.current = Menu()

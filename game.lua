@@ -19,9 +19,9 @@ local rows = {
 }
 
 local game_timers = {
-    easy = 5 * 60,
-    medium = 4 * 60,
-    hard = 3 * 60,
+    easy = 5 * 60 + 1,
+    medium = 4 * 60 + 1,
+    hard = 3 * 60 + 1,
 }
 
 local push_back = {
@@ -516,6 +516,7 @@ function Game:correct_answer()
             end
         end,
         function()
+            self.showing_info = true
             obj_question.text = self.current_question.info
             obj_question.text_alpha = 1
             for i = 1, self.n_choices do self.objects["choice_" .. i] = nil end
@@ -529,6 +530,7 @@ function Game:correct_answer()
                 self.remaining_shots = 3
                 self.start = true
                 self.is_question = false
+                self.showing_info = false
                 self:reload()
             end)
         end)
@@ -914,6 +916,10 @@ function Game:shoot(mx, my)
 end
 
 function Game:game_over(has_won)
+    if not has_won then
+        self.sources.bgm_lose:play()
+        self.sources.bgm_lose:setLooping(false)
+    end
     self.is_game_over = true
     for i = #self.border, 1, -1 do
         table.remove(self.border, i)
@@ -1301,7 +1307,8 @@ function Game:update(dt)
         p.r = p.r + dt
     end
 
-    if not self.is_paused then
+    local obj_ready_go = self.objects.txt_ready_go
+    if (not self.is_paused) and (not self.showing_info) and (obj_ready_go.alpha <= 0) then
         self.game_timer = self.game_timer - dt
         if self.game_timer <= 0 then
             self.game_timer = 0
