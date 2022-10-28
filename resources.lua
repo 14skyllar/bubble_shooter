@@ -22,6 +22,7 @@ Resources.images = {
         "background", "heart_empty", "bubble",
         "score_holder", "life_holder", "time_holder",
         "base", "text_ready_go", "shuffle", "box_choice",
+        "btn_shuffle_up", "btn_shuffle_down",
         "bg_box", "text_lose", "whole_star",
         "text_level_cleared", "empty_star",
         "sound_on", "sound_mute", "bgm_on", "bgm_mute",

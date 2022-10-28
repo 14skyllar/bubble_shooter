@@ -72,6 +72,7 @@ function Game:new(difficulty, level, hearts)
     self.last_score_threshold_p = 0
     self.powerups = false
     self.powerups_timer = 0
+    self.shuffle_mode = 1
     assert(self.rows ~= nil and self.rows > 0)
 
     local diff = string.upper(difficulty:sub(1, 1)) .. difficulty:sub(2)
@@ -86,7 +87,7 @@ function Game:new(difficulty, level, hearts)
     self.bubbles = {}
     self.objects_order = {
         "score_holder", "life_holder", "time_holder", "label", "settings",
-        "base", "shooter", "ammo", "shuffle",
+        "base", "shooter", "ammo", "shuffle", "btn_shuffle",
         "txt_ready_go",
         "bg_question", "bg_box", "bg_win_lose", "text_lose", "text_win",
         "text_level_cleared", "btn_sound", "btn_bgm",
@@ -264,6 +265,18 @@ function Game:load()
         on_click_sound = self.sources.snd_bubble_swap,
     })
     self.objects.shuffle.on_clicked = function() self:shuffle() end
+
+    local shuffle_ud_width, shuffle_ud_height = self.images_common.btn_shuffle_up:getDimensions()
+    self.objects.btn_shuffle = Button({
+        image = self.images_common.btn_shuffle_up,
+        x = gap * 5,
+        y = self.objects.shuffle.y - shuffle_height * shuffle_scale - 8,
+        sx = shuffle_scale, sy = shuffle_scale,
+        ox = shuffle_ud_width * 0.5, oy = shuffle_ud_height * 0.5,
+        is_clickable = false, is_hoverable = false,
+        on_click_sound = self.sources.snd_bubble_swap,
+    })
+    self.objects.btn_shuffle.on_clicked = function() self:change_shuffle() end
 
     self.ready_timer = timer(fade_in_sec, function(progress)
         local txt_ready_go = self.objects.txt_ready_go
@@ -460,6 +473,8 @@ function Game:show_question()
 
     self.objects.shuffle.is_hoverable = false
     self.objects.shuffle.is_clickable = false
+    self.objects.btn_shuffle.is_hoverable = false
+    self.objects.btn_shuffle.is_clickable = false
     self.objects.settings.is_clickable = false
     self.objects.settings.is_hoverable = false
 
@@ -524,6 +539,8 @@ function Game:correct_answer()
             self.wait_timer = timer(info_dur, nil, function()
                 self.objects.shuffle.is_hoverable = true
                 self.objects.shuffle.is_clickable = true
+                self.objects.btn_shuffle.is_hoverable = true
+                self.objects.btn_shuffle.is_clickable = true
                 self.objects.settings.is_clickable = true
                 self.objects.settings.is_hoverable = true
                 self.objects.bg_question = nil
@@ -704,18 +721,33 @@ function Game:create_bubbles(border_height, border_scale)
 end
 
 function Game:shuffle()
-    local temp_images = {}
-    for _, bubble in ipairs(self.bubbles) do
-        local data = {
-            image = bubble.image,
-            color_name = bubble.color_name,
-        }
-        table.insert(temp_images, data)
+    if self.shuffle_mode == 1 then
+        local temp_images = {}
+        for _, bubble in ipairs(self.bubbles) do
+            local data = {
+                image = bubble.image,
+                color_name = bubble.color_name,
+            }
+            table.insert(temp_images, data)
+        end
+        for _, bubble in ipairs(self.bubbles) do
+            local data = tablex.take_random(temp_images)
+            bubble.image = data.image
+            bubble.color_name = data.color_name
+        end
+    elseif self.shuffle_mode == 2 then
+        self:reload()
     end
-    for _, bubble in ipairs(self.bubbles) do
-        local data = tablex.take_random(temp_images)
-        bubble.image = data.image
-        bubble.color_name = data.color_name
+end
+
+function Game:change_shuffle()
+    local obj = self.objects.btn_shuffle
+    if self.shuffle_mode == 1 then
+        obj.image = self.images_common.btn_shuffle_down
+        self.shuffle_mode = 2
+    elseif self.shuffle_mode == 2 then
+        obj.image = self.images_common.btn_shuffle_up
+        self.shuffle_mode = 1
     end
 end
 
@@ -1140,6 +1172,8 @@ function Game:open_settings()
     self.start = false
     self.objects.shuffle.is_hoverable = false
     self.objects.shuffle.is_clickable = false
+    self.objects.btn_shuffle.is_hoverable = false
+    self.objects.btn_shuffle.is_clickable = false
     self.objects.settings.is_clickable = false
     self.objects.settings.is_hoverable = false
 
@@ -1236,7 +1270,9 @@ function Game:open_settings()
         self.is_paused = false
         self.start = true
         self.objects.shuffle.is_hoverable = true
-        self.objects.shuffle.is_clickable = true
+        self.objects.shuffle.is_hoverable = true
+        self.objects.btn_shuffle.is_clickable = true
+        self.objects.btn_shuffle.is_clickable = true
         self.objects.settings.is_clickable = true
         self.objects.settings.is_hoverable = true
     end
