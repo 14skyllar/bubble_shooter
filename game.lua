@@ -49,6 +49,19 @@ local bgm_delay = 2
 -- pop_dur = 0.25
 -- bgm_delay = 0.5
 
+local score_color = {
+    dark_blue = 1,
+    yellow = 1,
+    orange = 1,
+    yellow_green = 2,
+    light_blue = 2,
+    pink = 2,
+    violet = 3,
+    yellow_gold = 3,
+    red = 3,
+    green = 5
+}
+
 function Game:new(difficulty, level, hearts)
     local id = self:type()
     self.bubble_scale = 0.2
@@ -795,10 +808,13 @@ function Game:after_shoot()
         self.sources.snd_bubble_pop:setLooping(false)
         self.has_match = true
 
+        local color_name
+
         for k in pairs(found) do
             for i = #self.bubbles, 1, -1 do
                 local bubble = self.bubbles[i]
                 if bubble == k then
+                    color_name = bubble.color_name
                     local t = timer(pop_dur,
                         function(progress)
                             bubble.alpha = 1 - progress
@@ -820,7 +836,8 @@ function Game:after_shoot()
             end
         end
 
-        local score = matches == 3 and "1" or "2"
+        -- local score = matches == 3 and "1" or "2"
+        local score = score_color[color_name]
         self.score = self.score + score
         self.pending_score = {
             text = score,
