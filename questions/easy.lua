@@ -27,7 +27,7 @@ local easy = {
 		d = "3",
 	},
 	{
-		question = "What is the number of neutron of Ar? ",
+		question = "How many number of neutron are there in Ar? ",
 		answer = "a",
 		info = "Argon (Ar), chemical element, inert gas of Group 18 (noble gases) of the periodic table, terrestrially the most abundant and industrially the most frequently used of the noble gases.",
 		a = "22",
@@ -36,7 +36,7 @@ local easy = {
 		d = "23",
 	},
 	{
-		question = "What is the number of neutron of Mn? ",
+		question = "How many number of neutron are there in Mn? ",
 		answer = "a",
 		info = "Manganese (Mn), chemical element, one of the silvery white, hard, brittle metals of Group 7 (VIIb) of the periodic table.",
 		a = "30",
@@ -45,7 +45,7 @@ local easy = {
 		d = "29",
 	},
 	{
-		question = "What is the number of electron of Mn? ",
+		question = "How many number of electron are there in Mn? ",
 		answer = "d",
 		info = "Electron, lightest stable subatomic particle known, therefore considered nearly massless in comparison with a proton or a neutron.",
 		a = "38",
@@ -54,7 +54,7 @@ local easy = {
 		d = "25",
 	},
 	{
-		question = "What is the number of electron of Mercury(Hg)? ",
+		question = "How many number of electron are there in Mercury(Hg)? ",
 		answer = "c",
 		info = "Mercury (Hg), also called quicksilver, chemical element, liquid metal of Group 12 (IIb, or zinc group) of the periodic table.",
 		a = "75",
@@ -63,7 +63,7 @@ local easy = {
 		d = "82",
 	},
 	{
-		question = "What is the number of neutron of Fr? ",
+		question = "How many number of nueutron are there in Fr? ",
 		answer = "a",
 		info = "Francium (Fr), heaviest chemical element of Group 1 (Ia) in the periodic table, the alkali metal group.",
 		a = "223",
@@ -72,7 +72,7 @@ local easy = {
 		d = "243",
 	},
 	{
-		question = "What is the number of proton of Fr? ",
+		question = "How many number of proton are there in Fr? ",
 		answer = "b",
 		info = "Proton, stable subatomic particle that has a positive charge equal in magnitude to a unit of electron charge and a rest mass of 1.67262 × 10−27 kg, which is 1,836 times the mass of an electron.",
 		a = "67",
@@ -81,7 +81,7 @@ local easy = {
 		d = "96",
 	},
 	{
-		question = "What is the number of proton of Polonium(Po)? ",
+		question = "How many number of proton are there in Polonium(Po)? ",
 		answer = "b",
 		info = "Polonium (Po), a radioactive, silvery-gray or black metallic element of the oxygen group (Group 16 [VIa] in the periodic table).",
 		a = "34",
@@ -90,7 +90,7 @@ local easy = {
 		d = "64",
 	},
 	{
-		question = "What is the number of proton of La? ",
+		question = "How many number of proton are there in La? ",
 		answer = "b",
 		info = "Lanthanum (La), chemical element, a rare-earth metal of Group 3 of the periodic table, that is the prototype of the lanthanide series of elements.",
 		a = "37",
@@ -99,7 +99,7 @@ local easy = {
 		d = "87",
 	},
 	{
-		question = "What is the number of neutron of Hg? ",
+		question = "How many number of neutron are there in Hg? ",
 		answer = "c",
 		info = "Neutrons and protons, commonly called nucleons, are bound together in the dense inner core of an atom, the nucleus, where they account for 99.9 percent of the atom’s mass.",
 		a = "117",
@@ -108,7 +108,7 @@ local easy = {
 		d = "105",
 	},
 	{
-		question = "What is the number of neutron of Thulium(Tm)? ",
+		question = "How many number of neutron are there in Thulium(Tm)? ",
 		answer = "d",
 		info = "Thulium (Tm), chemical element, a rare-earth metal of the lanthanide series of the periodic table.",
 		a = "117",
@@ -189,7 +189,7 @@ local easy = {
 		d = "108",
 	},
 	{
-		question = "What is the number of neutron of Silver? ",
+		question = "How many number of neutron are there in Silver? ",
 		answer = "b",
 		info = "Silver (Ag), chemical element, a white lustrous metal valued for its decorative beauty and electrical conductivity.",
 		a = "51",
@@ -234,7 +234,7 @@ local easy = {
 		d = "15",
 	},
 	{
-		question = "What is the Symbol of the Element Lanthanum? ",
+		question = "What is the Symbol of the Element name Lanthanum? ",
 		answer = "b",
 		info = "Lanthanum is a ductile and malleable silvery white metal that is soft enough to be cut with a knife.",
 		a = "Ln",

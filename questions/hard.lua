@@ -19,7 +19,7 @@ local hard = {
 	},
 	{
 		question = "It is the kind of bond that results when two identical non-metallic atoms combine.",
-		answer = "Non-polar covalent bond",
+		answer = "Non-polar covalent",
 		info = "Did you know that Covalent bond, in chemistry, the interatomic linkage that results from the sharing of an electron pair between two atoms. The binding arises from the electrostatic attraction of their nuclei for the same electrons.?",
 		identification = true
 	},
@@ -172,7 +172,7 @@ local hard = {
 	},
 	{
 		question = "This is a bond that results when two identical non-metallic atoms combine.",
-		answer = "Non-polar covalent bond",
+		answer = "Non-polar covalent",
 		info = "Did you know that A non-polar covalent bond is a bond in which the electron pair is shared equally between the two bonded atoms. One example is hydrogen gas, H2. The two hydrogen atoms are identical, so the bond between them is non-polar.",
 		identification = true
 	},
@@ -262,7 +262,7 @@ local hard = {
 	},
 	{
 		question = "How many valence or outer level electrons does an atom of the element argon",
-		answer = "8 valence electrons",
+		answer = "8",
 		info = "Did you know that Valence, also spelled valency, in chemistry, the property of an element that determines the number of other atoms with which an atom of the element can combine.",
 		identification = true
 	},
