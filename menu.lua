@@ -105,18 +105,19 @@ function Menu:load()
 
     local box_info_width, box_info_height = self.images.box_info:getDimensions()
     local box_info_sx = (window_width - 48)/box_info_width
-    local box_info_sy = (window_height * 0.6)/(box_info_height * 0.5)
+    local box_info_sy = (window_height * 0.6)/(box_info_height * 0.2)
     self.objects.box_info = Button({
         image = self.images.box_info,
         x = half_window_width, y = half_window_height,
         sx = box_info_sx, sy = box_info_sy,
-        ox = box_info_width * 0.5, oy = box_info_height * 0.25,
+        ox = box_info_width * 0.5,
+        oy = box_info_height * 0.1,
         is_hoverable = false, is_clickable = false,
         alpha = 0,
     })
     self.quad = love.graphics.newQuad(
         0, 0,
-        box_info_width, box_info_height * 0.5,
+        box_info_width, box_info_height * 0.2,
         box_info_width, box_info_height
     )
 
