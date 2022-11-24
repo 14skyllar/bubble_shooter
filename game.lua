@@ -217,7 +217,7 @@ function Game:load()
     end
 
     local label_height = self.images.label:getHeight()
-    local label_scale = 0.8
+    local label_scale = 0.4
     self.objects.label = Button({
         image = self.images.label,
         x = gap, y = window_height - gap,
