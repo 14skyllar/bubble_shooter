@@ -35,6 +35,7 @@ local shuffle_limits = {
     medium = 3,
     hard = 2,
 }
+
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
 
 local fade_in_sec = 2
@@ -106,7 +107,7 @@ function Game:new(difficulty, level, hearts)
     self.bubbles = {}
     self.objects_order = {
         "score_holder", "life_holder", "time_holder", "label", "settings",
-        "base", "shooter", "ammo", "shuffle", "btn_shuffle",
+        "base", "shooter", "ammo", "shuffle", "btn_shuffle", "line_indicator",
         "txt_ready_go",
         "bg_question", "bg_box", "bg_win_lose", "text_lose", "text_win",
         "text_level_cleared", "btn_sound", "btn_bgm",
@@ -258,6 +259,17 @@ function Game:load()
         ox = shooter_width * 0.5, oy = shooter_height * 0.75,
         is_hoverable = false, is_clickable = false,
     })
+    local shooter = self.objects.shooter
+
+    local liw, lih = self.images_common.line_indicator:getDimensions()
+    self.objects.line_indicator = Button({
+        image = self.images_common.line_indicator,
+        x = half_window_width,
+        y = shooter.y - shooter.oy * shooter.sy,
+        ox = liw * 0.5,
+        oy = lih * 0.5,
+        is_hoverable = false, is_clickable = false,
+    })
 
     local txt_ready_go_width, txt_ready_go_height = self.images_common.text_ready_go:getDimensions()
     local txt_ready_go_scale = (window_width - (gap * 2))/txt_ready_go_width
@@ -282,6 +294,11 @@ function Game:load()
         ox = shuffle_width * 0.5, oy = shuffle_height * 0.5,
         is_clickable = false, is_hoverable = false,
         on_click_sound = self.sources.snd_bubble_swap,
+
+        text = self.shuffle_count,
+        text_color = {1, 1, 1, 1},
+        tox = shuffle_width * shuffle_scale * 0.5,
+        toy = shuffle_height * shuffle_scale * 0.5,
     })
     self.objects.shuffle.on_clicked = function() self:shuffle() end
 
@@ -741,6 +758,7 @@ end
 
 function Game:shuffle()
     if self.shuffle_count <= 0 then return end
+
     if self.shuffle_mode == 1 then
         local temp_images = {}
         for _, bubble in ipairs(self.bubbles) do
@@ -758,6 +776,7 @@ function Game:shuffle()
     elseif self.shuffle_mode == 2 then
         self:reload()
     end
+
     self.shuffle_count = self.shuffle_count - 1
     self.objects.shuffle.text = self.shuffle_count
 end
@@ -1559,7 +1578,6 @@ function Game:draw()
         love.graphics.setFont(tmp_font)
         love.graphics.setColor(1, 1, 1, 1)
     end
-
     -- local shooter = self.objects.shooter
     -- local threshold = shooter.y - shooter.oy * shooter.sy
     -- love.graphics.setColor(1, 0, 0, 1)

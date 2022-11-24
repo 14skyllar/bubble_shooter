@@ -27,7 +27,7 @@ Resources.images = {
         "text_level_cleared", "empty_star",
         "sound_on", "sound_mute", "bgm_on", "bgm_mute",
         "btn_resume", "btn_restart", "btn_main_menu",
-        "btn_next", "btn_retry", "btn_stages",
+        "btn_next", "btn_retry", "btn_stages", "line_indicator"
     },
 
     Easy = {"heart", "label", "settings", "shooter", "bg_question", "bg_win_lose", "text_win", "powerup"},
