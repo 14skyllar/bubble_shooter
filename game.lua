@@ -30,6 +30,11 @@ local push_back = {
     hard = 3,
 }
 
+local shuffle_limits = {
+    easy = 5,
+    medium = 3,
+    hard = 2,
+}
 local MIN_ANGLE, MAX_ANGLE = -0.9, 0.9
 
 local fade_in_sec = 2
@@ -85,6 +90,7 @@ function Game:new(difficulty, level, hearts)
     self.last_score_threshold_p = 0
     self.powerups = false
     self.powerups_timer = 0
+    self.shuffle_count = shuffle_limits[self.difficulty]
     self.shuffle_mode = 1
     assert(self.rows ~= nil and self.rows > 0)
 
@@ -734,6 +740,7 @@ function Game:create_bubbles(border_height, border_scale)
 end
 
 function Game:shuffle()
+    if self.shuffle_count <= 0 then return end
     if self.shuffle_mode == 1 then
         local temp_images = {}
         for _, bubble in ipairs(self.bubbles) do
@@ -751,6 +758,8 @@ function Game:shuffle()
     elseif self.shuffle_mode == 2 then
         self:reload()
     end
+    self.shuffle_count = self.shuffle_count - 1
+    self.objects.shuffle.text = self.shuffle_count
 end
 
 function Game:change_shuffle()
