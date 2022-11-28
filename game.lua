@@ -67,6 +67,7 @@ local score_color = {
     red = 3,
     green = 5
 }
+local border_scale = 0.4
 
 function Game:new(difficulty, level, hearts)
     local id = self:type()
@@ -198,7 +199,6 @@ function Game:load()
     })
 
     local border_width, border_height = self.images_common.bubble:getDimensions()
-    local border_scale = 0.4
     local border_count = math.floor(window_width/(border_width * border_scale)) + 1
     local border_y = (self.objects.time_holder.y + time_holder_height * ui_scale) + (gap * 3)
     self.border_y = border_y + border_height * border_scale
@@ -330,7 +330,7 @@ function Game:load()
         end)
     end)
 
-    self:create_bubbles(border_height, border_scale)
+    self:create_bubbles(border_height)
 
     if #self.bubbles > 0 then
         self.sources.snd_ready_go:play()
@@ -624,7 +624,7 @@ function Game:wrong_answer(value, push_only)
     end
 end
 
-function Game:create_bubbles(border_height, border_scale)
+function Game:create_bubbles(border_height)
     local window_width = love.graphics.getWidth()
     local half_window_width = window_width * 0.5
 
@@ -666,6 +666,7 @@ function Game:create_bubbles(border_height, border_scale)
                     ox = width * 0.5, oy = height * 0.5,
                     color_name = color_name,
                 })
+                bubble._height = height
 
                 table.insert(self.bubbles, bubble)
             end
@@ -691,6 +692,7 @@ function Game:create_bubbles(border_height, border_scale)
                     ox = width * 0.5, oy = height * 0.5,
                     color_name = color_name,
                 })
+                bubble._height = height
 
                 table.insert(self.bubbles, bubble)
             end
@@ -717,6 +719,7 @@ function Game:create_bubbles(border_height, border_scale)
                     ox = width * 0.5, oy = height * 0.5,
                     color_name = color_name,
                 })
+                bubble._height = height
 
                 table.insert(self.bubbles, bubble)
             end
@@ -727,6 +730,7 @@ function Game:create_bubbles(border_height, border_scale)
 
     end
 
+    self._top = self.border_y + (border_height * border_scale * 0.5)
     -- compress initial bubbles
     -- for _, bubble in ipairs(self.bubbles) do
     --     bubble.vy = -bubble.within_rad
@@ -889,12 +893,74 @@ function Game:after_shoot()
     end
 
     self.objects.ammo = nil
+    -- self:check_hanging()
 
     if matches >= 3 then
         return
     end
 
     self:resolve_post_shoot()
+end
+
+function Game:check_hanging()
+    for i, bubble in ipairs(self.bubbles) do
+        bubble._id = i
+        bubble._top = self._top
+    end
+
+    local found = {}
+    local stack = {}
+    for _, bubble in ipairs(self.bubbles) do
+        local res = (bubble.y - bubble.within_rad) <= bubble._top
+        bubble.is_connected = res
+        table.insert(stack, bubble)
+    end
+
+    while #stack > 0 do
+        local current = table.remove(stack, 1)
+        local within_radius = current:get_within_others(self.bubbles)
+        for _, bubble in ipairs(within_radius) do
+            if not found[bubble] then
+                bubble.is_connected = current.is_connected
+                found[bubble] = bubble
+                table.insert(stack, bubble)
+
+                if not bubble.is_connected then
+                    local ty = love.graphics.getHeight()
+                    bubble.should_fall = true
+                    local t = timer(pop_dur,
+                        function(progress)
+                            bubble.y = mathx.lerp(bubble.y, ty, progress * 0.25)
+                            bubble.alpha = 1 - progress
+                        end,
+                        function()
+                            bubble.is_dead = true
+                        end)
+
+                    table.insert(self.pop_timers, t)
+                end
+            end
+        end
+    end
+
+    -- local found = {}
+    -- for i = #self.bubbles, 1, -1 do
+    --     local bubble = self.bubbles[i]
+    --     local res = bubble:is_connected_to_top(self.bubbles, found)
+    --     if not res then
+    --         bubble.alpha = 0.4
+    --
+    --         -- local t = timer(pop_dur,
+    --         --     function(progress)
+    --         --         bubble.alpha = 1 - progress
+    --         --     end,
+    --         --     function()
+    --         --         bubble.is_dead = true
+    --         --     end
+    --         -- )
+    --         -- table.insert(self.pop_timers, t)
+    --     end
+    -- end
 end
 
 function Game:resolve_post_shoot()
@@ -1423,6 +1489,12 @@ function Game:update(dt)
         self.wait_timer:update(dt)
     end
 
+    local border_height = self.images_common.bubble:getHeight()
+    for _, border in ipairs(self.border) do
+        self._top = border.y + border_height * border_scale * 0.5
+    end
+    self:check_hanging()
+
     local obj_input = self.waiting_for_input
     if obj_input then
         obj_input.is_hovered = true
@@ -1503,7 +1575,7 @@ function Game:update(dt)
     --get the bubble that is in the lowest pos
     local lowest_bubble, lowest_y = nil, 0
     for _, bubble in ipairs(self.bubbles) do
-        if bubble ~= self.objects.powerup then
+        if bubble ~= self.objects.powerup and not bubble.should_fall then
             if bubble.y > lowest_y then
                 lowest_bubble = bubble
                 lowest_y = bubble.y
@@ -1658,10 +1730,10 @@ function Game:mousemoved(mx, my, dmx, dmy, istouch)
 end
 
 function Game:keypressed(key)
-    if key == "b" then
-        local next_state = require("menu")
-        StateManager:switch(next_state, self.difficulty)
-    end
+    -- if key == "b" then
+    --     local next_state = require("menu")
+    --     StateManager:switch(next_state, self.difficulty)
+    -- end
     -- if key == "q" then
     --     local bg_question = self.objects.bg_question
     --     if bg_question then

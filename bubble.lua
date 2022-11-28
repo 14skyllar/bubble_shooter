@@ -72,6 +72,52 @@ function Bubble:get_within_radius(bubbles)
     return within
 end
 
+function Bubble:get_within_others(bubbles)
+    local within = {}
+    for _, other in ipairs(bubbles) do
+        if self ~= other then
+            local this_pos = vec2(self.x, self.y)
+            local other_pos = vec2(other.x, other.y)
+            local distance = this_pos:distance(other_pos)
+            if distance <= self.within_rad then
+                table.insert(within, other)
+            end
+        end
+    end
+    return within
+end
+
+function Bubble:is_connected_to_top(bubbles, found)
+    local r = self.within_rad
+    if (self.y - r) <= self._top then return true end
+
+    --get neighbors
+    local ns = {}
+    for _, other in ipairs(bubbles) do
+        if self ~= other then
+            local _, is_powerup = self:check_match(other)
+            if not is_powerup then
+                local this_pos = vec2(self.x, self.y)
+                local other_pos = vec2(other.x, other.y)
+                local distance = this_pos:distance(other_pos)
+                if distance <= r then
+                    if not found[other] then
+                        found[other] = other
+                        table.insert(ns, other)
+                    end
+                end
+            end
+        end
+    end
+
+    for _, n in ipairs(ns) do
+        if n:is_connected_to_top(bubbles, found) then
+            return true
+        end
+    end
+    return false
+end
+
 function Bubble:update(dt)
     if self.is_dead then return end
     if self.is_hit then return end
@@ -100,6 +146,14 @@ end
 
 function Bubble:draw()
     love.graphics.setColor(1, 1, 1, self.alpha)
+
+    -- if self.is_connected then
+    --     love.graphics.setColor(1, 0, 0, 0.5)
+    -- end
+    --
+    -- if self.should_fall then
+    --     love.graphics.setColor(0, 0, 0, 0.5)
+    -- end
 
     love.graphics.draw(self.image, self.x, self.y, self.r, self.sx, self.sy, self.ox, self.oy)
 
