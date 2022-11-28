@@ -894,6 +894,7 @@ function Game:after_shoot()
 
     self.objects.ammo = nil
     -- self:check_hanging()
+    self:check_hanging()
 
     if matches >= 3 then
         return
