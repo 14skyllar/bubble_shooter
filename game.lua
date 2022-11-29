@@ -893,7 +893,6 @@ function Game:after_shoot()
     end
 
     self.objects.ammo = nil
-    -- self:check_hanging()
     self:check_hanging()
 
     if matches >= 3 then
@@ -904,8 +903,49 @@ function Game:after_shoot()
 end
 
 function Game:check_hanging()
-    for i, bubble in ipairs(self.bubbles) do
-        bubble._id = i
+    local at_top = {}
+    local found = {}
+
+    for _, bubble in ipairs(self.bubbles) do
+        bubble.is_connected = false
+        local res = (bubble.y - bubble.within_rad) <= self._top
+        if res then
+            bubble.is_connected = res
+            table.insert(at_top, bubble)
+        end
+    end
+
+    while #at_top > 0 do
+        local current = table.remove(at_top, 1)
+        local ns = current:get_within_others(self.bubbles)
+        for _, other in ipairs(ns) do
+            if not found[other] then
+                other.is_connected = true
+                found[other] = other
+                table.insert(at_top, other)
+            end
+        end
+    end
+
+    for _, bubble in ipairs(self.bubbles) do
+        if not bubble.is_connected then
+            local ty = love.graphics.getHeight()
+            bubble.should_fall = true
+            local t = timer(pop_dur,
+                function(progress)
+                    bubble.y = mathx.lerp(bubble.y, ty, progress * 0.25)
+                    bubble.alpha = 1 - progress
+                end,
+                function()
+                    bubble.is_dead = true
+                end)
+            table.insert(self.pop_timers, t)
+        end
+    end
+end
+
+function Game:check_hanging2()
+    for _, bubble in ipairs(self.bubbles) do
         bubble._top = self._top
     end
 
@@ -943,25 +983,6 @@ function Game:check_hanging()
             end
         end
     end
-
-    -- local found = {}
-    -- for i = #self.bubbles, 1, -1 do
-    --     local bubble = self.bubbles[i]
-    --     local res = bubble:is_connected_to_top(self.bubbles, found)
-    --     if not res then
-    --         bubble.alpha = 0.4
-    --
-    --         -- local t = timer(pop_dur,
-    --         --     function(progress)
-    --         --         bubble.alpha = 1 - progress
-    --         --     end,
-    --         --     function()
-    --         --         bubble.is_dead = true
-    --         --     end
-    --         -- )
-    --         -- table.insert(self.pop_timers, t)
-    --     end
-    -- end
 end
 
 function Game:resolve_post_shoot()

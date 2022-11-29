@@ -87,37 +87,6 @@ function Bubble:get_within_others(bubbles)
     return within
 end
 
-function Bubble:is_connected_to_top(bubbles, found)
-    local r = self.within_rad
-    if (self.y - r) <= self._top then return true end
-
-    --get neighbors
-    local ns = {}
-    for _, other in ipairs(bubbles) do
-        if self ~= other then
-            local _, is_powerup = self:check_match(other)
-            if not is_powerup then
-                local this_pos = vec2(self.x, self.y)
-                local other_pos = vec2(other.x, other.y)
-                local distance = this_pos:distance(other_pos)
-                if distance <= r then
-                    if not found[other] then
-                        found[other] = other
-                        table.insert(ns, other)
-                    end
-                end
-            end
-        end
-    end
-
-    for _, n in ipairs(ns) do
-        if n:is_connected_to_top(bubbles, found) then
-            return true
-        end
-    end
-    return false
-end
-
 function Bubble:update(dt)
     if self.is_dead then return end
     if self.is_hit then return end
