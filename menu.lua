@@ -565,6 +565,12 @@ function Menu:load()
         self.objects.medium.is_clickable = false
         self.objects.hard.is_clickable = false
 
+        for id in pairs(self.objects) do
+            if id:sub(0, 5) == "star_" then
+                self.objects[id] = nil
+            end
+        end
+
         if self.group_stage then
             tablex.clear(self.group_stage)
         end
@@ -581,6 +587,12 @@ function Menu:load()
         self.objects.scoreboard.alpha = 1
         for _, obj in ipairs(self.group_scoreboard) do obj.alpha = 0 end
 
+        for id in pairs(self.objects) do
+            if id:sub(0, 5) == "star_" then
+                self.objects[id] = nil
+            end
+        end
+
         if self.objects.credits.alpha == 1 then
             self.objects.credits.alpha = 0
             self.objects.btn_credits.is_hoverable = false
@@ -593,15 +605,6 @@ function Menu:load()
                 end
             end
         else
-            local progress = UserData.data.progress[self.difficulty]
-            for i = 1, progress.total do
-                local star_obj_id = "star_" .. i
-                local obj = self.objects[star_obj_id]
-                if obj then
-                    self.objects[star_obj_id] = nil
-                end
-            end
-
             self.objects.box_info.alpha = 0
             self.objects.play.is_clickable = true
             self.objects.play.is_hoverable = true
