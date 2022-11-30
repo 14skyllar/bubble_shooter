@@ -593,6 +593,15 @@ function Menu:load()
                 end
             end
         else
+            local progress = UserData.data.progress[self.difficulty]
+            for i = 1, progress.total do
+                local star_obj_id = "star_" .. i
+                local obj = self.objects[star_obj_id]
+                if obj then
+                    self.objects[star_obj_id] = nil
+                end
+            end
+
             self.objects.box_info.alpha = 0
             self.objects.play.is_clickable = true
             self.objects.play.is_hoverable = true
